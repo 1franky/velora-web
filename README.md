@@ -15,5 +15,5 @@ Las versiones exactas se validarán al crear el scaffold (ver roadmap, Fase 0).
 
 ## Repositorios relacionados
 
-- `velora-api` — backend (Kotlin + Spring Boot).
+- `velora-api` — backend (Java + Spring Boot).
 - `velora-android` — aplicación Android (Kotlin + Jetpack Compose).
