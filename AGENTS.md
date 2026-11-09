@@ -1,6 +1,6 @@
 # Instrucciones para agentes de desarrollo — Velora
 
-> Copia del archivo homónimo de `velora-project-kit` (carpeta padre). La especificación vive en `../docs/` y el contrato en `../contracts/openapi-v1.yaml`.
+> Copia del archivo homónimo de `velora-project-kit` (carpeta padre). La especificación vive en `../docs/` y el contrato en `../velora-api/openapi/openapi-v1.yaml` (ADR-011).
 
 ## Antes de cambiar código
 
@@ -65,7 +65,7 @@
 
 ## Reglas específicas de `velora-web`
 
-- Consume la API únicamente según `../contracts/openapi-v1.yaml`; no inventes endpoints ni campos.
+- Consume la API únicamente según `../velora-api/openapi/openapi-v1.yaml` (ADR-011); no inventes endpoints ni campos.
 - Todos los textos de interfaz pasan por i18n (`es-MX` inicial).
 - No publiques mapas ni tracks privados; respeta la atribución del proveedor de tiles.
 - Considera accesibilidad y diseño adaptable desde el inicio.
