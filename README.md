@@ -17,3 +17,7 @@ Las versiones exactas se validarán al crear el scaffold (ver roadmap, Fase 0).
 
 - `velora-api` — backend (Java + Spring Boot).
 - `velora-android` — aplicación Android (Kotlin + Jetpack Compose).
+
+## Licencia
+
+[Apache-2.0](LICENSE).
