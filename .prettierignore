@@ -1,0 +1,12 @@
+.next
+node_modules
+pnpm-lock.yaml
+src/lib/api/schema.d.ts
+playwright-report
+test-results
+coverage
+public/tiles
+# Copias del kit: deben seguir idénticas al original
+AGENTS.md
+CLAUDE.md
+CODEX.md
