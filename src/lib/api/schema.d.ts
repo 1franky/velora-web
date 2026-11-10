@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@fbd04956c498dd310133e165a56f9fff8b5172fc. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@55f96b28bdad4d2aa268ea212a8dc33bc9a39aa1. No editar a mano.
 
 export interface paths {
     "/auth/login": {
@@ -185,7 +185,11 @@ export interface paths {
         delete: operations["deleteActivity"];
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Corregir título, tipo o bicicleta de una actividad
+         * @description Solo se modifican los campos enviados; `bikeId: null` quita la bicicleta. Las métricas, el recorrido y el archivo original no se editan (para recalcularlos, usar el reproceso). La bicicleta debe ser del usuario.
+         */
+        patch: operations["updateActivity"];
         trace?: never;
     };
     "/activities/{activityId}/reprocess": {
@@ -591,6 +595,16 @@ export interface components {
                 /** Format: date-time */
                 importedAt: string;
             };
+        };
+        /** @description Solo se modifican los campos enviados. */
+        ActivityUpdate: {
+            title?: string;
+            subType?: components["schemas"]["ActivitySubType"];
+            /**
+             * Format: uuid
+             * @description Bicicleta del usuario; null la quita.
+             */
+            bikeId?: string | null;
         };
         /** @enum {string} */
         StreamType: "TIME" | "LATITUDE" | "LONGITUDE" | "ALTITUDE" | "DISTANCE" | "SPEED" | "HEART_RATE" | "CADENCE" | "POWER" | "TEMPERATURE";
@@ -1068,6 +1082,35 @@ export interface operations {
                 };
                 content?: never;
             };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateActivity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityUpdate"];
+            };
+        };
+        responses: {
+            /** @description Actividad actualizada */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityDetail"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
         };

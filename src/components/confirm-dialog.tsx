@@ -1,8 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState, useId, useRef, type ReactNode } from "react";
-import type { ActionState } from "@/app/(app)/actividades/[id]/actions";
+import { useActionState, useEffect, useId, useRef, type ReactNode } from "react";
+import { IDLE, type FormState } from "@/lib/catalog/form-state";
 
 type Props = {
   triggerLabel: string;
@@ -11,13 +11,14 @@ type Props = {
   children: ReactNode;
   confirmLabel: string;
   pendingLabel: string;
-  action: (previous: ActionState, form: FormData) => Promise<ActionState>;
+  action: (previous: FormState, form: FormData) => Promise<FormState>;
   fields: Record<string, string>;
 };
 
 /**
  * Confirmación de una acción destructiva con <dialog> nativo (modal accesible: atrapa el foco y cierra con Esc),
- * nunca con confirm() del navegador. El foco inicial va a "Cancelar": la opción segura.
+ * nunca con confirm() del navegador. El foco inicial va a "Cancelar": la opción segura. Se cierra solo si la acción
+ * termina bien (las que redirigen no vuelven aquí).
  */
 export function ConfirmDialog({
   triggerLabel,
@@ -32,7 +33,11 @@ export function ConfirmDialog({
   const t = useTranslations("confirm");
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
-  const [state, formAction, pending] = useActionState(action, null);
+  const [state, formAction, pending] = useActionState(action, IDLE);
+
+  useEffect(() => {
+    if (state.status === "ok") dialog.current?.close();
+  }, [state]);
 
   return (
     <>
@@ -52,9 +57,9 @@ export function ConfirmDialog({
             {title}
           </h2>
           <div className="flex flex-col gap-2 text-tinta-suave">{children}</div>
-          {state?.error && (
+          {state.status === "error" && (
             <p role="alert" className="font-medium text-negativo">
-              {t(`errors.${state.error}`)}
+              {state.detail ?? t(`errors.${state.error ?? "invalid"}`)}
             </p>
           )}
           <div className="flex flex-wrap justify-end gap-3">
