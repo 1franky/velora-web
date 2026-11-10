@@ -5,16 +5,19 @@ import { LoginForm } from "./login-form";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("login");
-  return { title: `${t("title")} · Velora` };
+  return { title: t("title") };
 }
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const t = await getTranslations("login");
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 p-8">
+    <main id="contenido" className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-8 p-8">
+      <p aria-hidden className="font-display text-5xl font-bold tracking-tight">
+        Velora
+      </p>
       <header className="flex flex-col gap-1">
         <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="opacity-80">{t("subtitle")}</p>
+        <p className="text-tinta-suave">{t("subtitle")}</p>
       </header>
       <Suspense>
         <NextField searchParams={searchParams} />

@@ -24,6 +24,7 @@
     "api:check": "node scripts/api-types.mjs --check"
   },
   "dependencies": {
+    "lucide-react": "1.70.0",
     "next": "16.4.5",
     "next-intl": "4.14.9",
     "openapi-fetch": "0.17.0",
