@@ -7,7 +7,60 @@
     "title": "Inicio",
     "greeting": "Hola, {email}",
     "loadingUser": "Cargando tu cuenta…",
-    "summarySoon": "Aquí verás tu resumen: kilómetros, tiempo en movimiento, desnivel y tu rodada más reciente."
+    "periods": {
+      "label": "Periodo",
+      "semana": "Semana",
+      "mes": "Mes",
+      "año": "Año",
+      "todo": "Todo"
+    },
+    "headline": {
+      "semana": "Esta semana: <strong>{distance}</strong> en {count, plural, one {# rodada} other {# rodadas}}",
+      "mes": "Este mes: <strong>{distance}</strong> en {count, plural, one {# rodada} other {# rodadas}}",
+      "año": "Este año: <strong>{distance}</strong> en {count, plural, one {# rodada} other {# rodadas}}",
+      "todo": "En total: <strong>{distance}</strong> en {count, plural, one {# rodada} other {# rodadas}}"
+    },
+    "noRides": {
+      "semana": "Esta semana aún no tienes rodadas",
+      "mes": "Este mes aún no tienes rodadas",
+      "año": "Este año aún no tienes rodadas"
+    },
+    "totals": {
+      "distance": "Distancia",
+      "movingTime": "Tiempo en movimiento",
+      "elevation": "Desnivel positivo",
+      "count": "Rodadas"
+    },
+    "previous": {
+      "semana": "la semana pasada",
+      "mes": "el mes pasado",
+      "año": "el año pasado"
+    },
+    "change": {
+      "up": "{percent} más que {previous}",
+      "down": "{percent} menos que {previous}",
+      "same": "Igual que {previous}",
+      "fromZero": "Sin rodadas {previous}"
+    },
+    "trend": {
+      "title": "Últimos 12 meses",
+      "hint": "Pasa el cursor sobre una columna para ver el mes.",
+      "readout": "{month}: {distance} en {count, plural, one {# rodada} other {# rodadas}}",
+      "table": "Ver como tabla",
+      "caption": "Distancia, rodadas y desnivel por mes",
+      "month": "Mes"
+    },
+    "latest": {
+      "title": "Tu rodada más reciente",
+      "view": "Ver detalle",
+      "mapLabel": "Mapa de «{title}»"
+    },
+    "empty": {
+      "title": "Aún no tienes actividades",
+      "body": "Importa los archivos FIT, GPX o TCX de tu ciclocomputadora o reloj y aquí verás tus kilómetros, tu tiempo y tu desnivel.",
+      "action": "Importar tus primeros archivos"
+    },
+    "unavailable": "No pudimos cargar tu resumen. Intenta de nuevo en unos momentos."
   },
   "login": {
     "title": "Iniciar sesión",

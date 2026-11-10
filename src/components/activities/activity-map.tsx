@@ -93,7 +93,15 @@ function drawPosition(map: MapLibreMap, theme: MapTheme) {
  * actual y se vuelve a pedir con más detalle al acercarse. No se marcan inicio ni fin: revelarían dónde vive o
  * dónde suele salir el usuario (10-security-and-operations.md §3).
  */
-export function ActivityMap({ activityId, hasBasemap }: { activityId: string; hasBasemap: boolean }) {
+type MapProps = {
+  activityId: string;
+  hasBasemap: boolean;
+  /** Vista previa sin interacción (tarjeta de Inicio); `label` la describe para lectores de pantalla. */
+  mini?: boolean;
+  label?: string;
+};
+
+export function ActivityMap({ activityId, hasBasemap, mini = false, label }: MapProps) {
   const t = useTranslations("map");
   const container = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<Status>("cargando");
@@ -121,7 +129,8 @@ export function ActivityMap({ activityId, hasBasemap }: { activityId: string; ha
           style: basemapStyle(theme, window.location.origin, hasBasemap),
           bounds: MEXICO,
           attributionControl: { compact: true },
-          cooperativeGestures: true,
+          interactive: !mini,
+          cooperativeGestures: !mini,
           maxZoom: 18,
           locale: {
             "NavigationControl.ZoomIn": t("zoomIn"),
@@ -133,7 +142,7 @@ export function ActivityMap({ activityId, hasBasemap }: { activityId: string; ha
             "CooperativeGesturesHandler.WindowsHelpText": t("gestureWindows"),
             "CooperativeGesturesHandler.MacHelpText": t("gestureMac"),
             "CooperativeGesturesHandler.MobileHelpText": t("gestureMobile"),
-            "Map.Title": t("canvasLabel"),
+            "Map.Title": mini && label ? label : t("canvasLabel"),
           },
         });
       } catch {
@@ -141,9 +150,11 @@ export function ActivityMap({ activityId, hasBasemap }: { activityId: string; ha
         return;
       }
       const instance = map;
-      instance.addControl(new maplibre.NavigationControl({ showCompass: false }), "top-right");
-      instance.addControl(new maplibre.FullscreenControl(), "top-right");
-      instance.addControl(new maplibre.ScaleControl({ unit: "metric" }), "bottom-left");
+      if (!mini) {
+        instance.addControl(new maplibre.NavigationControl({ showCompass: false }), "top-right");
+        instance.addControl(new maplibre.FullscreenControl(), "top-right");
+        instance.addControl(new maplibre.ScaleControl({ unit: "metric" }), "bottom-left");
+      }
 
       const loaded = new Promise<void>((resolve) => instance.once("load", () => resolve()));
       const first = await fetchTrack(activityId, 12);
@@ -175,7 +186,11 @@ export function ActivityMap({ activityId, hasBasemap }: { activityId: string; ha
         }
       };
       instance.on("moveend", () => void refine());
-      instance.fitBounds(track.bbox as [number, number, number, number], { padding: 48, animate: false, maxZoom: 16 });
+      instance.fitBounds(track.bbox as [number, number, number, number], {
+        padding: mini ? 24 : 48,
+        animate: false,
+        maxZoom: 16,
+      });
       await refine();
       if (cancelled) return;
       instance.once("idle", () => !cancelled && setStatus("listo"));
@@ -206,7 +221,17 @@ export function ActivityMap({ activityId, hasBasemap }: { activityId: string; ha
       cleanups.forEach((cleanup) => cleanup());
       map?.remove();
     };
-  }, [activityId, hasBasemap, t]);
+  }, [activityId, hasBasemap, mini, label, t]);
+
+  if (mini) {
+    return (
+      <div className="relative overflow-hidden rounded-lg border border-linea bg-superficie-hundida">
+        <div ref={container} data-estado={status} className="h-48 w-full" />
+        {status === "sinWebgl" && <Overlay text={t("noWebgl")} />}
+        {status === "sinRecorrido" && <Overlay text={t("trackUnavailable")} />}
+      </div>
+    );
+  }
 
   return (
     <section aria-labelledby="mapa-titulo" className="flex flex-col gap-2">
