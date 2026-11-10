@@ -1,0 +1,62 @@
+import "server-only";
+import { cache } from "react";
+import type { components } from "@/lib/api/schema";
+import { api } from "@/lib/auth/session";
+import type { ActivityQuery } from "./filters";
+
+export type ActivitySummary = components["schemas"]["ActivitySummary"];
+export type ActivityDetail = components["schemas"]["ActivityDetail"];
+export type Bike = components["schemas"]["Bike"];
+
+export type ActivityPage = { items: ActivitySummary[]; nextCursor: string | null };
+
+/** Errores que la interfaz distingue: sesión caducada, consulta rechazada o API caída. */
+export type LoadError = "session" | "invalid" | "unavailable";
+export type Loaded<T> = { ok: true; data: T } | { ok: false; error: LoadError };
+
+const PAGE_SIZE = 25;
+
+function failure(status: number | undefined): { ok: false; error: LoadError } {
+  if (status === 401) return { ok: false, error: "session" };
+  if (status === 400) return { ok: false, error: "invalid" };
+  return { ok: false, error: "unavailable" };
+}
+
+export async function listActivities(query: ActivityQuery, cursor?: string): Promise<Loaded<ActivityPage>> {
+  try {
+    const { data, response } = await (
+      await api()
+    ).GET("/activities", { params: { query: { ...query, cursor, limit: PAGE_SIZE } } });
+    return data ? { ok: true, data } : failure(response.status);
+  } catch {
+    return failure(undefined);
+  }
+}
+
+/** Bicicletas para el filtro y para mostrar su nombre. Si fallan, la lista sigue funcionando sin ellas. */
+export async function listBikes(): Promise<Bike[]> {
+  try {
+    const { data } = await (await api()).GET("/bikes");
+    return data?.items ?? [];
+  } catch {
+    return [];
+  }
+}
+
+/** Con `cache`: la metadata y la página comparten una sola consulta por solicitud. */
+export const getActivity = cache(async function getActivity(
+  id: string,
+): Promise<Loaded<ActivityDetail> | { ok: false; error: "notFound" }> {
+  try {
+    const { data, response } = await (
+      await api()
+    ).GET("/activities/{activityId}", {
+      params: { path: { activityId: id } },
+    });
+    if (data) return { ok: true, data };
+    if (response.status === 404) return { ok: false, error: "notFound" };
+    return failure(response.status);
+  } catch {
+    return failure(undefined);
+  }
+});

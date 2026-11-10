@@ -46,10 +46,6 @@
   },
   "sections": {
     "soonLabel": "En preparación",
-    "actividades": {
-      "title": "Actividades",
-      "body": "Aquí estarán todas tus rodadas, con filtros por fecha, bicicleta y distancia, y la opción de importar archivos FIT, GPX y TCX."
-    },
     "explorador": {
       "title": "Explorador",
       "body": "Un mapa de calor de todo lo que has rodado y las zonas que te faltan por descubrir."
@@ -77,5 +73,136 @@
       "dark": "Oscuro"
     },
     "moreSoon": "Pronto podrás administrar aquí tu zona horaria, tus bicicletas y tus dispositivos."
+  },
+  "activities": {
+    "title": "Actividades",
+    "import": "Importar archivos",
+    "types": {
+      "MOUNTAIN_BIKE": "Montaña",
+      "ROAD": "Carretera",
+      "GRAVEL": "Gravel",
+      "INDOOR": "Rodillo",
+      "OTHER": "Otra"
+    },
+    "columns": {
+      "date": "Fecha",
+      "title": "Actividad",
+      "distance": "Distancia",
+      "movingTime": "En movimiento",
+      "elevation": "Desnivel",
+      "speed": "Vel. media"
+    },
+    "listLabel": "Tus actividades, de la más reciente a la más antigua",
+    "showMore": "Mostrar más",
+    "loadingMore": "Cargando…",
+    "count": "{count, plural, one {# actividad} other {# actividades}} en pantalla",
+    "filters": {
+      "title": "Filtros",
+      "from": "Desde",
+      "to": "Hasta",
+      "type": "Tipo",
+      "anyType": "Todos",
+      "bike": "Bicicleta",
+      "anyBike": "Todas",
+      "minKm": "Distancia mínima (km)",
+      "maxKm": "Distancia máxima (km)",
+      "apply": "Aplicar filtros",
+      "clear": "Quitar filtros",
+      "toggle": "Filtros",
+      "toggleActive": "{count, plural, one {Filtros (# activo)} other {Filtros (# activos)}}"
+    },
+    "empty": {
+      "title": "Aún no tienes actividades",
+      "body": "Importa los archivos FIT, GPX o TCX de tu ciclocomputadora o reloj para ver aquí tus rodadas.",
+      "action": "Importar tus primeros archivos"
+    },
+    "noMatches": {
+      "title": "Ninguna actividad coincide con los filtros",
+      "body": "Prueba con otro rango de fechas o de distancia."
+    },
+    "errors": {
+      "session": "Tu sesión terminó. Vuelve a iniciar sesión para ver tus actividades.",
+      "invalid": "La API rechazó los filtros. Revisa las fechas y las distancias.",
+      "unavailable": "No pudimos cargar tus actividades. Intenta de nuevo en unos momentos.",
+      "login": "Iniciar sesión"
+    },
+    "detail": {
+      "back": "Volver a actividades",
+      "metrics": "Métricas",
+      "distance": "Distancia",
+      "movingTime": "Tiempo en movimiento",
+      "elapsedTime": "Tiempo total",
+      "elevationGain": "Desnivel positivo",
+      "elevationLoss": "Desnivel negativo",
+      "averageSpeed": "Velocidad media",
+      "maxSpeed": "Velocidad máxima",
+      "averageHeartRate": "Frecuencia cardiaca media",
+      "maxHeartRate": "Frecuencia cardiaca máxima",
+      "averagePower": "Potencia media",
+      "maxPower": "Potencia máxima",
+      "averageCadence": "Cadencia media",
+      "bpm": "{value} ppm",
+      "watts": "{value} W",
+      "rpm": "{value} rpm",
+      "source": "Importada de un archivo {format} de {size} el {date}.",
+      "derived": "Calculada por Velora",
+      "moreSoon": "Pronto verás aquí el mapa del recorrido, el perfil de elevación y las gráficas de la rodada."
+    }
+  },
+  "imports": {
+    "title": "Importar archivos",
+    "intro": "Sube archivos FIT, GPX o TCX de hasta 50 MB. Puedes elegir varios a la vez; se procesan uno por uno.",
+    "drop": "Arrastra tus archivos aquí",
+    "or": "o",
+    "choose": "Elige archivos",
+    "accepted": "FIT, GPX o TCX, hasta 50 MB cada uno",
+    "queueLabel": "Archivos en esta importación",
+    "summary": "{done} de {total} {total, plural, one {archivo procesado} other {archivos procesados}}",
+    "back": "Ver mis actividades",
+    "clear": "Limpiar lista",
+    "status": {
+      "waiting": "En espera",
+      "uploading": "Subiendo…",
+      "QUEUED": "En cola",
+      "PROCESSING": "Procesando…",
+      "COMPLETED": "Importada",
+      "DUPLICATE": "Ya la tenías",
+      "REJECTED": "Rechazada",
+      "FAILED": "Falló"
+    },
+    "viewActivity": "Ver actividad",
+    "viewExisting": "Ver la que ya tenías",
+    "possibleDuplicate": "Se parece a {count, plural, one {otra actividad} other {# actividades}} que ya tenías; se importó de todos modos.",
+    "compare": "Comparar",
+    "warnings": {
+      "INVALID_COORDINATES": "{count, plural, one {Se descartó # punto con coordenadas inválidas} other {Se descartaron # puntos con coordenadas inválidas}}.",
+      "GPS_JUMPS": "{count, plural, one {Se corrigió # salto de GPS} other {Se corrigieron # saltos de GPS}}.",
+      "ALTITUDE_JUMPS": "{count, plural, one {Se corrigió # salto de altitud} other {Se corrigieron # saltos de altitud}}.",
+      "LONG_PAUSES": "{count, plural, one {Se detectó # pausa larga; no cuenta como tiempo en movimiento} other {Se detectaron # pausas largas; no cuentan como tiempo en movimiento}}.",
+      "NEGATIVE_VALUES": "{count, plural, one {Se descartó # valor negativo} other {Se descartaron # valores negativos}}.",
+      "NON_MONOTONIC_TIME": "{count, plural, one {Se reordenó # punto con la hora fuera de orden} other {Se reordenaron # puntos con la hora fuera de orden}}.",
+      "POSSIBLE_DUPLICATE": "Puede ser la misma rodada que otra actividad."
+    },
+    "errors": {
+      "EMPTY_FILE": "El archivo está vacío.",
+      "UNSUPPORTED_FORMAT": "No es un archivo FIT, GPX ni TCX.",
+      "MALFORMED_FILE": "El archivo está dañado o incompleto.",
+      "FORBIDDEN_XML_CONSTRUCT": "El archivo contiene construcciones XML no permitidas por seguridad.",
+      "TOO_MANY_POINTS": "El archivo tiene demasiados puntos (más de 200 000).",
+      "INVALID_DATA": "El archivo no tiene datos de actividad utilizables.",
+      "INTERNAL_ERROR": "Ocurrió un error al procesarlo. Intenta importarlo de nuevo.",
+      "tooLarge": "Pesa más de 50 MB.",
+      "wrongExtension": "Solo se aceptan archivos .fit, .gpx o .tcx.",
+      "session": "Tu sesión terminó. Vuelve a iniciar sesión e inténtalo de nuevo.",
+      "forbidden": "La subida se bloqueó por seguridad. Recarga la página e inténtalo de nuevo.",
+      "invalid": "La API rechazó el archivo.",
+      "unavailable": "No pudimos conectar con el servicio. Intenta de nuevo en unos momentos.",
+      "unknown": "No pudimos importar este archivo."
+    }
+  },
+  "notFound": {
+    "title": "No encontramos esta página",
+    "body": "Puede que el enlace esté mal escrito o que lo que buscabas ya no exista.",
+    "home": "Ir al inicio"
   }
 }

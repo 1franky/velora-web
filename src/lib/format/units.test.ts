@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { MISSING, formatDistance, formatDuration, formatElevation, formatLocalDate, formatSpeed } from "./units";
+import {
+  MISSING,
+  formatDistance,
+  formatDuration,
+  formatElevation,
+  formatFileSize,
+  formatInstantDate,
+  formatLocalDate,
+  formatSpeed,
+  formatWeekdayDate,
+} from "./units";
 
 describe("formatos es-MX", () => {
   it("convierte metros a kilómetros con un decimal y separador de miles", () => {
@@ -34,5 +44,22 @@ describe("formatos es-MX", () => {
     expect(formatDuration(null)).toBe(MISSING);
     expect(formatLocalDate(null)).toBe(MISSING);
     expect(formatDistance(0)).toBe("0.0 km");
+  });
+
+  it("muestra la fecha con día de la semana, sin puntos de abreviatura", () => {
+    const text = formatWeekdayDate("2026-11-09");
+    expect(text).toMatch(/^lun,? 9 (de )?nov (de )?2026$/);
+    expect(formatWeekdayDate(null)).toBe(MISSING);
+  });
+
+  it("muestra tamaños de archivo en kB o MB", () => {
+    expect(formatFileSize(12.34 * 1024 * 1024)).toBe("12.3 MB");
+    expect(formatFileSize(9_000)).toBe("9 kB");
+    expect(formatFileSize(10)).toBe("1 kB");
+  });
+
+  it("muestra la fecha de un instante en la zona de la actividad", () => {
+    expect(formatInstantDate("2026-11-10T03:30:00Z", "America/Mexico_City")).toBe("09/11/2026");
+    expect(formatInstantDate("no-es-fecha", "America/Mexico_City")).toBe(MISSING);
   });
 });
