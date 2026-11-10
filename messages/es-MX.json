@@ -1,0 +1,11 @@
+{
+  "app": {
+    "name": "Velora",
+    "description": "Plataforma personal de analítica de ciclismo"
+  },
+  "home": {
+    "title": "Velora",
+    "tagline": "Tu historial de rodadas, bajo tu control.",
+    "status": "En construcción: pronto podrás ver aquí tus rodadas, métricas y mapas."
+  }
+}

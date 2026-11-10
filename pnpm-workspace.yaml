@@ -1,0 +1,10 @@
+# Política de cadena de suministro: no instalar versiones publicadas hace menos de 3 días.
+minimumReleaseAge: 4320
+allowBuilds:
+  # Optimización de imágenes de Next; no la usamos (sin next/image con formatos remotos).
+  sharp: false
+  # Resolutor nativo de eslint-plugin-import; tiene binarios precompilados.
+  unrs-resolver: false
+  # Traídos por next-intl para su extractor de mensajes (no se usa); binarios precompilados opcionales.
+  "@parcel/watcher": false
+  "@swc/core": false

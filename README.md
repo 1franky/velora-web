@@ -2,7 +2,7 @@
 
 Aplicación web adaptable de **Velora**, plataforma personal de analítica de ciclismo (ruta y MTB).
 
-> Nombre provisional. Estado: Fase 0 — preparación. Aún no hay código de aplicación.
+> Nombre provisional. Estado: Fase 3 — scaffold.
 
 ## Stack previsto
 
@@ -12,6 +12,27 @@ Aplicación web adaptable de **Velora**, plataforma personal de analítica de ci
 - Interfaz en español de México (`es-MX`) mediante i18n.
 
 Las versiones exactas se validarán al crear el scaffold (ver roadmap, Fase 0).
+
+## Desarrollo
+
+Requisitos: Node 26 LTS (`.nvmrc`) y pnpm 12. Con [fnm](https://github.com/Schniz/fnm): `fnm use` dentro de la carpeta.
+
+```bash
+pnpm install
+pnpm dev            # http://localhost:3000
+```
+
+| Comando                                              | Qué hace                                                                                                                                            |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm lint` / `pnpm typecheck` / `pnpm format:check` | Calidad (lint sin avisos, tipos, formato)                                                                                                           |
+| `pnpm test`                                          | Pruebas unitarias (Vitest)                                                                                                                          |
+| `pnpm e2e`                                           | Build de producción + pruebas E2E con Playwright, incluida accesibilidad (axe, WCAG A/AA)                                                           |
+| `pnpm api:types`                                     | Regenera `src/lib/api/schema.d.ts` desde el contrato de `velora-api` fijado en `package.json` (`velora.contractRef`); `--local` usa `../velora-api` |
+| `pnpm api:check`                                     | Verifica que los tipos coinciden con el contrato fijado (CI)                                                                                        |
+
+**Cadena de suministro:** `pnpm-workspace.yaml` exige que las dependencias tengan al menos 3 días publicadas y bloquea scripts de instalación salvo los aprobados explícitamente.
+
+**Textos:** todo texto visible vive en `messages/es-MX.json` (next-intl); los formatos de números, unidades, duraciones y fechas usan `Intl` con es-MX (`src/lib/format`).
 
 ## Repositorios relacionados
 
