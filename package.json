@@ -22,7 +22,8 @@
     "e2e": "playwright test",
     "api:types": "node scripts/api-types.mjs",
     "api:check": "node scripts/api-types.mjs --check",
-    "basemap": "node scripts/basemap.mjs"
+    "basemap": "node scripts/basemap.mjs",
+    "e2e:real": "scripts/e2e-real.sh"
   },
   "dependencies": {
     "@protomaps/basemaps": "5.7.2",

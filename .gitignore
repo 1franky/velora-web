@@ -57,3 +57,7 @@ next-env.d.ts
 
 # Worker de MapLibre copiado por scripts/vendor-maplibre.mjs
 /public/vendor/
+
+# Reporte de las E2E contra la API real
+/playwright-report-real/
+/.velora-api/

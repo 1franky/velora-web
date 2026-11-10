@@ -40,3 +40,42 @@ jobs:
           name: playwright-report
           path: playwright-report
           retention-days: 7
+
+  # Web + API real + PostgreSQL desechable (scripts/e2e-real.sh). La API se compila en el commit que fija
+  # velora.contractRef: el contrato con el que se generan los tipos y la API que se prueba son siempre los mismos.
+  e2e-real:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Commit de la API fijado en el contrato
+        id: api
+        run: echo "ref=$(node -p "require('./package.json').velora.contractRef")" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v7
+        with:
+          repository: 1franky/velora-api
+          ref: ${{ steps.api.outputs.ref }}
+          path: .velora-api
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+      - uses: gradle/actions/setup-gradle@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Dependencias
+        run: pnpm install --frozen-lockfile
+      - name: Navegador para E2E
+        run: pnpm exec playwright install --with-deps chromium
+      - name: E2E contra la API real
+        run: pnpm e2e:real
+        env:
+          VELORA_API_DIR: .velora-api
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report-real
+          path: playwright-report-real
+          retention-days: 7

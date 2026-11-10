@@ -15,6 +15,8 @@ const eslintConfig = defineConfig([
     // Worker de MapLibre copiado (scripts/vendor-maplibre.mjs) y mapa base generado.
     "public/vendor/**",
     "basemap/**",
+    // Copia de velora-api que baja el job e2e-real del CI.
+    ".velora-api/**",
   ]),
 ]);
 

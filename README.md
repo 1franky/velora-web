@@ -38,6 +38,8 @@ pnpm dev            # http://localhost:3000
 
 **Mapa base (ADR-015):** `pnpm basemap` recorta México del build público de Protomaps hasta zoom 14 (~600 MB, requiere `brew install pmtiles`) y descarga fuentes e iconos en `basemap/` (ignorado por Git; `VELORA_BASEMAP_DIR` cambia la ruta). `/mapa/*` lo sirve por rangos solo con sesión válida (el token se valida contra `/me` y se recuerda un minuto), así que ningún tercero ve qué zonas se consultan. Sin el archivo, el recorrido se dibuja sobre un fondo liso. El worker de MapLibre se copia a `public/vendor/` en `pnpm dev` y `pnpm build`. Las E2E usan un recorte mínimo versionado en `e2e/fixtures/basemap/`.
 
+**E2E contra la API real:** `pnpm e2e:real` (requiere Docker y JDK 25) levanta un PostgreSQL + PostGIS desechable, compila `velora-api` desde `../velora-api` (o `VELORA_API_DIR`), crea un propietario con contraseña aleatoria y recorre el flujo completo con archivos GPX/TCX sintéticos (`e2e-real/`): login, importación, duplicados, detalle, edición, reproceso, Inicio y borrado. Nunca toca tu base local. En CI corre en el job `e2e-real` contra el commit de la API fijado en `velora.contractRef`. `pnpm e2e` sigue usando la API falsa para casos difíciles de reproducir con la real (errores de red, archivos de 12 MB).
+
 **Cadena de suministro:** `pnpm-workspace.yaml` exige que las dependencias tengan al menos 3 días publicadas y bloquea scripts de instalación salvo los aprobados explícitamente.
 
 **Textos:** todo texto visible vive en `messages/es-MX.json` (next-intl); los formatos de números, unidades, duraciones y fechas usan `Intl` con es-MX (`src/lib/format`).

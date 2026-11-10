@@ -26,7 +26,8 @@ export default async function ImportPage() {
         <p className="text-tinta-suave">{t("intro")}</p>
       </div>
       <div className="max-w-2xl">
-        <Suspense fallback={<Importer bikes={[]} />}>
+        {/* El respaldo no es interactivo: archivos elegidos en un importador provisional se perderían al cambiarlo. */}
+        <Suspense fallback={<div aria-hidden className="h-56 animate-pulse rounded-lg bg-superficie-hundida" />}>
           <ImporterWithBikes />
         </Suspense>
       </div>

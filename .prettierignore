@@ -13,3 +13,5 @@ CODEX.md
 e2e/fixtures/
 public/vendor/
 basemap/
+playwright-report-real
+.velora-api
