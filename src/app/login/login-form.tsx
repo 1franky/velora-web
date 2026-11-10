@@ -18,7 +18,7 @@ export function LoginForm({ next }: { next: string }) {
           autoComplete="username"
           required
           defaultValue={state.email}
-          className="rounded-md border border-current/30 bg-transparent px-3 py-2"
+          className="rounded-md border border-linea bg-superficie px-3 py-2"
         />
       </label>
       <label className="flex flex-col gap-1">
@@ -28,16 +28,16 @@ export function LoginForm({ next }: { next: string }) {
           type="password"
           autoComplete="current-password"
           required
-          className="rounded-md border border-current/30 bg-transparent px-3 py-2"
+          className="rounded-md border border-linea bg-superficie px-3 py-2"
         />
       </label>
-      <p role="alert" aria-live="polite" className="min-h-6 text-sm font-medium text-red-700 dark:text-red-300">
+      <p role="alert" aria-live="polite" className="min-h-6 text-sm font-medium text-negativo">
         {state.error}
       </p>
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-orange-800 px-4 py-2 font-semibold text-white hover:bg-orange-900 disabled:opacity-60"
+        className="rounded-md bg-acento px-4 py-2 font-semibold text-acento-texto-sobre hover:brightness-110 disabled:opacity-60"
       >
         {pending ? t("submitting") : t("submit")}
       </button>

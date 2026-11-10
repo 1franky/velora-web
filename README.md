@@ -38,6 +38,14 @@ pnpm dev            # http://localhost:3000
 
 **Textos:** todo texto visible vive en `messages/es-MX.json` (next-intl); los formatos de números, unidades, duraciones y fechas usan `Intl` con es-MX (`src/lib/format`).
 
+## Diseño
+
+- **Tokens** en `src/app/globals.css` (Tailwind 4, `@theme`): niebla `#eef1f3` y superficies blancas, tinta `#1c2430`, acento cempasúchil `#9a4a06` para texto y botones (6.3:1 con blanco) y `#c76a0e` solo para marcas no textuales. Tema oscuro equivalente con acento `#f2a03d`.
+- **Tema**: claro, oscuro o según el dispositivo; se guarda solo en el navegador (`velora-tema`) y un script en línea lo aplica antes del primer pintado.
+- **Tipografía**: Barlow y Barlow Semi Condensed, autoalojadas con `next/font`; cifras tabulares con la clase `cifras`.
+- **Estructura**: riel lateral en escritorio y barra inferior con "Más" en móvil; la sección activa se marca con una franja de carril.
+- **Accesibilidad**: enlace para saltar al contenido, foco visible, `prefers-reduced-motion` respetado y pruebas axe (WCAG 2.1 AA) en claro y oscuro.
+
 ## Repositorios relacionados
 
 - `velora-api` — backend (Java + Spring Boot).

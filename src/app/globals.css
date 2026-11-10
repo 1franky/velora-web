@@ -1,26 +1,103 @@
 @import "tailwindcss";
 
+/*
+ * Identidad de Velora (Fase 3): gris niebla de día, azul noche de sierra de noche y cempasúchil como único acento.
+ * Contrastes verificados (WCAG AA): textos ≥ 4.5:1 en ambos temas; el cempasúchil medio solo en elementos no
+ * textuales (≥ 3:1). Ver README, sección "Diseño".
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --fondo: #eef1f3;
+  --superficie: #ffffff;
+  --superficie-hundida: #e2e7eb;
+  --linea: #c9d1d8;
+  --tinta: #1c2430;
+  --tinta-suave: #4a5563;
+  --acento: #9a4a06; /* texto y botones con texto blanco (6.3:1) */
+  --acento-medio: #c76a0e; /* carril de navegación, gráficas, foco */
+  --acento-texto-sobre: #ffffff;
+  --positivo: #2f6b4f;
+  --negativo: #a3392a;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --fondo: #121a24;
+    --superficie: #1b2532;
+    --superficie-hundida: #0d141c;
+    --linea: #2c3a4a;
+    --tinta: #e6ebf0;
+    --tinta-suave: #a7b2bf;
+    --acento: #f2a03d;
+    --acento-medio: #f2a03d;
+    --acento-texto-sobre: #121a24;
+    --positivo: #6fc59a;
+    --negativo: #f08a78;
+    color-scheme: dark;
   }
 }
 
+:root[data-theme="dark"] {
+  --fondo: #121a24;
+  --superficie: #1b2532;
+  --superficie-hundida: #0d141c;
+  --linea: #2c3a4a;
+  --tinta: #e6ebf0;
+  --tinta-suave: #a7b2bf;
+  --acento: #f2a03d;
+  --acento-medio: #f2a03d;
+  --acento-texto-sobre: #121a24;
+  --positivo: #6fc59a;
+  --negativo: #f08a78;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-fondo: var(--fondo);
+  --color-superficie: var(--superficie);
+  --color-superficie-hundida: var(--superficie-hundida);
+  --color-linea: var(--linea);
+  --color-tinta: var(--tinta);
+  --color-tinta-suave: var(--tinta-suave);
+  --color-acento: var(--acento);
+  --color-acento-medio: var(--acento-medio);
+  --color-acento-texto-sobre: var(--acento-texto-sobre);
+  --color-positivo: var(--positivo);
+  --color-negativo: var(--negativo);
+  --font-sans: var(--font-barlow), system-ui, sans-serif;
+  --font-display: var(--font-barlow-semi), var(--font-barlow), system-ui, sans-serif;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background: var(--fondo);
+  color: var(--tinta);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  line-height: 1.15;
+}
+
+/* Cifras alineadas en tablas y métricas. */
+.cifras {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 3px solid var(--acento-medio);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

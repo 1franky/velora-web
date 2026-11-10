@@ -14,7 +14,10 @@ export async function accessToken(): Promise<string | undefined> {
 
 /** Cliente de la API autenticado con el access token de la solicitud. */
 export async function api() {
-  return createApiClient(apiBaseUrl(), await accessToken());
+  // Primero la cookie: con Cache Components, lo que sigue a una lectura de la solicitud no se prerenderiza, así el
+  // build no necesita VELORA_API_URL.
+  const token = await accessToken();
+  return createApiClient(apiBaseUrl(), token);
 }
 
 /** Solo en server actions o route handlers (escribir cookies durante el render no está permitido). */

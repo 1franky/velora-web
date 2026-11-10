@@ -4,10 +4,10 @@
     "description": "Plataforma personal de analítica de ciclismo"
   },
   "home": {
-    "title": "Velora",
+    "title": "Inicio",
     "greeting": "Hola, {email}",
     "loadingUser": "Cargando tu cuenta…",
-    "status": "En construcción: pronto podrás ver aquí tus rodadas, métricas y mapas."
+    "summarySoon": "Aquí verás tu resumen: kilómetros, tiempo en movimiento, desnivel y tu rodada más reciente."
   },
   "login": {
     "title": "Iniciar sesión",
@@ -27,5 +27,55 @@
   "session": {
     "logout": "Cerrar sesión",
     "unavailable": "No pudimos cargar tu cuenta. Intenta recargar la página."
+  },
+  "shell": {
+    "skipToContent": "Saltar al contenido",
+    "primaryNav": "Navegación principal",
+    "more": "Más",
+    "moreNav": "Más secciones",
+    "account": "Tu cuenta"
+  },
+  "nav": {
+    "inicio": "Inicio",
+    "actividades": "Actividades",
+    "explorador": "Explorador",
+    "rutas": "Rutas",
+    "rendimiento": "Rendimiento",
+    "objetivos": "Objetivos",
+    "configuracion": "Configuración"
+  },
+  "sections": {
+    "soonLabel": "En preparación",
+    "actividades": {
+      "title": "Actividades",
+      "body": "Aquí estarán todas tus rodadas, con filtros por fecha, bicicleta y distancia, y la opción de importar archivos FIT, GPX y TCX."
+    },
+    "explorador": {
+      "title": "Explorador",
+      "body": "Un mapa de calor de todo lo que has rodado y las zonas que te faltan por descubrir."
+    },
+    "rutas": {
+      "title": "Rutas",
+      "body": "Compara recorridos que repites y revisa sus perfiles de elevación, ascensos y descensos."
+    },
+    "rendimiento": {
+      "title": "Rendimiento",
+      "body": "Tu distancia y desnivel por semana y por mes, tus récords y tu número de Eddington."
+    },
+    "objetivos": {
+      "title": "Objetivos",
+      "body": "Define metas de distancia o desnivel y sigue tu avance."
+    }
+  },
+  "settings": {
+    "title": "Configuración",
+    "appearance": "Apariencia",
+    "appearanceHint": "Se guarda solo en este navegador.",
+    "theme": {
+      "system": "Según tu dispositivo",
+      "light": "Claro",
+      "dark": "Oscuro"
+    },
+    "moreSoon": "Pronto podrás administrar aquí tu zona horaria, tus bicicletas y tus dispositivos."
   }
 }
