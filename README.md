@@ -36,6 +36,8 @@ pnpm dev            # http://localhost:3000
 
 **Importación de archivos:** el navegador sube cada archivo a `POST /api/importaciones`, que lo reenvía como flujo a `velora-api` sin cargarlo en memoria. Esa ruta queda fuera de Proxy (Proxy copia el cuerpo y lo trunca en silencio a 10 MB) y comprueba el origen, porque un route handler no tiene la protección CSRF de las server actions. No renueva tokens: antes de subir, el navegador llama a `/api/sesion`, que pasa por Proxy, para que haya un solo punto de renovación. El estado del trabajo se consulta en `/api/importaciones/{jobId}`.
 
+**Mapa base (ADR-015):** `pnpm basemap` recorta México del build público de Protomaps hasta zoom 14 (~600 MB, requiere `brew install pmtiles`) y descarga fuentes e iconos en `basemap/` (ignorado por Git; `VELORA_BASEMAP_DIR` cambia la ruta). `/mapa/*` lo sirve por rangos solo con sesión válida (el token se valida contra `/me` y se recuerda un minuto), así que ningún tercero ve qué zonas se consultan. Sin el archivo, el recorrido se dibuja sobre un fondo liso. El worker de MapLibre se copia a `public/vendor/` en `pnpm dev` y `pnpm build`. Las E2E usan un recorte mínimo versionado en `e2e/fixtures/basemap/`.
+
 **Cadena de suministro:** `pnpm-workspace.yaml` exige que las dependencias tengan al menos 3 días publicadas y bloquea scripts de instalación salvo los aprobados explícitamente.
 
 **Textos:** todo texto visible vive en `messages/es-MX.json` (next-intl); los formatos de números, unidades, duraciones y fechas usan `Intl` con es-MX (`src/lib/format`).

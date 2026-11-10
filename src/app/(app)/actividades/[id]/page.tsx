@@ -4,7 +4,9 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { ActivityMap } from "@/components/activities/activity-map";
 import { getActivity, type ActivityDetail } from "@/lib/activities/data";
+import { basemapAvailable } from "@/lib/basemap/available";
 import {
   MISSING,
   formatDistance,
@@ -45,7 +47,11 @@ export default async function ActivityPage({ params }: PageProps<"/actividades/[
 async function Detail({ params }: { params: PageProps<"/actividades/[id]">["params"] }) {
   const { id } = await params;
   if (!UUID.test(id)) notFound();
-  const [result, t] = await Promise.all([getActivity(id), getTranslations("activities")]);
+  const [result, t, hasBasemap] = await Promise.all([
+    getActivity(id),
+    getTranslations("activities"),
+    basemapAvailable(),
+  ]);
   if (!result.ok) {
     if (result.error === "notFound") notFound();
     return (
@@ -63,6 +69,7 @@ async function Detail({ params }: { params: PageProps<"/actividades/[id]">["para
         </p>
         <h1 className="text-4xl font-bold tracking-tight">{activity.title}</h1>
       </header>
+      {activity.hasTrack && <ActivityMap activityId={activity.id} hasBasemap={hasBasemap} />}
       <Metrics activity={activity} />
       <p className="text-sm text-tinta-suave">
         {t("detail.source", {
@@ -71,7 +78,6 @@ async function Detail({ params }: { params: PageProps<"/actividades/[id]">["para
           date: formatInstantDate(activity.originalFile.importedAt, activity.timeZone),
         })}
       </p>
-      <p className="max-w-prose text-tinta-suave">{t("detail.moreSoon")}</p>
     </>
   );
 }

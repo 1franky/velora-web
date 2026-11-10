@@ -49,3 +49,11 @@ next-env.d.ts
 /coverage/
 # Mapa base PMTiles (ADR-015): se descarga con script, no se versiona
 /public/tiles/*.pmtiles
+
+# Mapa base generado por `pnpm basemap` (cientos de MB; ADR-015)
+/basemap/
+/basemap.anterior/
+/.basemap-*/
+
+# Worker de MapLibre copiado por scripts/vendor-maplibre.mjs
+/public/vendor/

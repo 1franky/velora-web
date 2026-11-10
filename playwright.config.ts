@@ -30,7 +30,8 @@ export default defineConfig({
       url: `http://localhost:${PORT}/login`,
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
-      env: { VELORA_API_URL: `http://localhost:${FAKE_API_PORT}` },
+      // Mapa base mínimo versionado (zoom 0–3): prueba /mapa/* sin descargar el recorte completo.
+      env: { VELORA_API_URL: `http://localhost:${FAKE_API_PORT}`, VELORA_BASEMAP_DIR: "e2e/fixtures/basemap" },
     },
   ],
 });

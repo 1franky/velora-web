@@ -101,3 +101,43 @@ h3 {
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * Controles de MapLibre con los colores de la app: en tema oscuro, las cajas blancas por defecto deslumbran junto al
+ * mapa oscuro. El prefijo .maplibregl-map gana a la hoja de MapLibre, que se carga después.
+ */
+.maplibregl-map .maplibregl-ctrl-group,
+.maplibregl-map .maplibregl-ctrl-attrib,
+.maplibregl-map .maplibregl-ctrl-attrib.maplibregl-compact,
+.maplibregl-map .maplibregl-ctrl-scale {
+  background-color: var(--superficie);
+  color: var(--tinta-suave);
+}
+
+.maplibregl-map .maplibregl-ctrl-group:not(:empty) {
+  box-shadow: 0 0 0 1px var(--linea);
+}
+
+.maplibregl-map .maplibregl-ctrl-group button + button {
+  border-top-color: var(--linea);
+}
+
+.maplibregl-map .maplibregl-ctrl-attrib a {
+  color: var(--tinta-suave);
+}
+
+.maplibregl-map .maplibregl-ctrl-scale {
+  border-color: var(--tinta-suave);
+}
+
+:root[data-theme="dark"] .maplibregl-ctrl-icon,
+:root[data-theme="dark"] .maplibregl-ctrl-attrib-button {
+  filter: invert(1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .maplibregl-ctrl-icon,
+  :root:not([data-theme="light"]) .maplibregl-ctrl-attrib-button {
+    filter: invert(1);
+  }
+}
