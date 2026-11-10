@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Importer } from "@/components/activities/importer";
+import { listAllBikes } from "@/lib/catalog/data";
+import { Suspense } from "react";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("imports"))("title") };
@@ -24,8 +26,16 @@ export default async function ImportPage() {
         <p className="text-tinta-suave">{t("intro")}</p>
       </div>
       <div className="max-w-2xl">
-        <Importer />
+        <Suspense fallback={<Importer bikes={[]} />}>
+          <ImporterWithBikes />
+        </Suspense>
       </div>
     </div>
   );
+}
+
+/** Solo las bicicletas activas se ofrecen al importar. */
+async function ImporterWithBikes() {
+  const bikes = (await listAllBikes()) ?? [];
+  return <Importer bikes={bikes.filter((bike) => bike.active).map(({ id, name }) => ({ id, name }))} />;
 }

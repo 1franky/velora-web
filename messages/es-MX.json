@@ -72,7 +72,73 @@
       "light": "Claro",
       "dark": "Oscuro"
     },
-    "moreSoon": "Pronto podrás administrar aquí tu zona horaria, tus bicicletas y tus dispositivos."
+    "units": "Las distancias se muestran en kilómetros y el desnivel en metros.",
+    "timeZone": {
+      "title": "Zona horaria",
+      "label": "Zona horaria",
+      "hint": "Define la fecha de cada rodada que importes a partir de ahora; las ya importadas conservan la suya.",
+      "mexico": "México",
+      "others": "Otras zonas",
+      "save": "Guardar zona horaria",
+      "saving": "Guardando…",
+      "saved": "Zona horaria guardada.",
+      "error": "No se pudo guardar. Intenta de nuevo.",
+      "unavailable": "No pudimos cargar tu cuenta. Intenta recargar la página."
+    },
+    "bikes": {
+      "title": "Bicicletas",
+      "hint": "Asígnalas al importar o al editar una rodada para filtrar tus actividades por bicicleta.",
+      "listLabel": "Tus bicicletas",
+      "empty": "Aún no registras bicicletas.",
+      "unavailable": "No pudimos cargar tus bicicletas.",
+      "types": {
+        "MTB": "Montaña",
+        "ROAD": "Ruta",
+        "GRAVEL": "Gravel",
+        "OTHER": "Otra"
+      },
+      "name": "Nombre",
+      "type": "Tipo",
+      "brand": "Marca",
+      "model": "Modelo",
+      "weight": "Peso (kg)",
+      "weightHint": "Opcional, hasta 50 kg.",
+      "weightValue": "{kg} kg",
+      "retired": "Retirada",
+      "add": "Agregar bicicleta",
+      "addTitle": "Agregar bicicleta",
+      "addSubmit": "Agregar bicicleta",
+      "edit": "Editar",
+      "editTitle": "Editar «{name}»",
+      "editSubmit": "Guardar cambios",
+      "saving": "Guardando…",
+      "retire": "Retirar",
+      "reactivate": "Reactivar",
+      "retireNamed": "Retirar «{name}»",
+      "reactivateNamed": "Reactivar «{name}»",
+      "error": "No se pudo guardar.",
+      "delete": "Borrar",
+      "deleteTitle": "¿Borrar «{name}»?",
+      "deleteBody": "Sus rodadas se conservan, pero quedan sin bicicleta asignada.",
+      "deleteRetireInstead": "Si ya no la usas, puedes retirarla: deja de ofrecerse y sus rodadas la conservan.",
+      "deleteConfirm": "Borrar bicicleta",
+      "deleting": "Borrando…"
+    },
+    "devices": {
+      "title": "Dispositivos",
+      "hint": "Las ciclocomputadoras, relojes o apps con las que registras tus rodadas.",
+      "listLabel": "Tus dispositivos",
+      "empty": "Aún no registras dispositivos.",
+      "unavailable": "No pudimos cargar tus dispositivos.",
+      "name": "Nombre",
+      "nameHint": "Por ejemplo, «Edge del día a día».",
+      "manufacturer": "Fabricante",
+      "model": "Modelo",
+      "add": "Agregar dispositivo",
+      "addTitle": "Agregar dispositivo",
+      "addSubmit": "Agregar dispositivo",
+      "saving": "Guardando…"
+    }
   },
   "activities": {
     "title": "Actividades",
@@ -197,7 +263,10 @@
       "invalid": "La API rechazó el archivo.",
       "unavailable": "No pudimos conectar con el servicio. Intenta de nuevo en unos momentos.",
       "unknown": "No pudimos importar este archivo."
-    }
+    },
+    "bike": "Bicicleta de estos archivos",
+    "noBike": "Sin bicicleta",
+    "bikeHint": "Se asigna a todos los archivos que subas ahora; puedes cambiarla después en cada rodada."
   },
   "notFound": {
     "title": "No encontramos esta página",
@@ -327,5 +396,25 @@
     "irreversible": "No se puede deshacer.",
     "keepConfirm": "Borrar «{title}»",
     "deleting": "Borrando…"
+  },
+  "forms": {
+    "errors": {
+      "required": "Este campo es obligatorio.",
+      "tooLong": "Es demasiado largo.",
+      "invalid": "El valor no es válido.",
+      "range": "Debe ser mayor que 0 y hasta 50."
+    }
+  },
+  "editActivity": {
+    "trigger": "Editar",
+    "title": "Editar actividad",
+    "name": "Título",
+    "type": "Tipo",
+    "bike": "Bicicleta",
+    "withoutBike": "Sin bicicleta",
+    "retired": "{name} (retirada)",
+    "noBikes": "Registra tus bicicletas en Configuración.",
+    "submit": "Guardar cambios",
+    "saving": "Guardando…"
   }
 }

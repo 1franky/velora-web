@@ -154,6 +154,9 @@ function reset() {
     activities: seedActivities(),
     jobs: new Map(),
     lastUploadBytes: 0,
+    bikes: [{ ...BIKE }],
+    devices: [],
+    timeZone: "America/Mexico_City",
     trackZooms: [],
   };
 }
@@ -208,7 +211,9 @@ function listActivities(query) {
 
 /** El resultado depende del nombre del archivo sintético: así cada E2E elige su escenario. */
 function startImport(raw) {
-  const name = /filename="([^"]+)"/.exec(raw.toString("latin1"))?.[1] ?? "archivo.fit";
+  const text = raw.toString("latin1");
+  const name = /filename="([^"]+)"/.exec(text)?.[1] ?? "archivo.fit";
+  const bikeId = /name="bikeId"\r\n\r\n([0-9a-f-]{36})/.exec(text)?.[1] ?? null;
   const jobId = randomUUID();
   let result;
   if (name.includes("duplicada")) {
@@ -220,6 +225,7 @@ function startImport(raw) {
       ...seedActivities()[0],
       id: randomUUID(),
       title: `Importada ${name}`,
+      bikeId,
       localStartDate: "2026-11-09",
       startedAt: "2026-11-09T13:00:00Z",
     };
@@ -329,7 +335,62 @@ createServer(async (req, res) => {
     return unauthorized(res, "Inicia sesión para continuar.");
   }
   if (route === "GET /api/v1/activities") return send(res, 200, listActivities(url.searchParams));
-  if (route === "GET /api/v1/bikes") return send(res, 200, { items: [BIKE] });
+  if (route === "GET /api/v1/bikes") return send(res, 200, { items: state.bikes });
+  if (route === "POST /api/v1/bikes") {
+    if (!body.name?.trim() || !body.bikeType) return send(res, 400, { title: "Solicitud inválida", status: 400 });
+    const bike = {
+      id: randomUUID(),
+      name: body.name.trim(),
+      bikeType: body.bikeType,
+      brand: body.brand ?? null,
+      model: body.model ?? null,
+      weightKg: body.weightKg ?? null,
+      active: true,
+      createdAt: new Date().toISOString(),
+    };
+    state.bikes.push(bike);
+    return send(res, 201, bike);
+  }
+  const bikeMatch = /^(PATCH|DELETE) \/api\/v1\/bikes\/([\w-]+)$/.exec(route);
+  if (bikeMatch) {
+    const bike = state.bikes.find((b) => b.id === bikeMatch[2]);
+    if (!bike) return send(res, 404, { title: "No encontrado", status: 404, detail: "La bicicleta no existe." });
+    if (bikeMatch[1] === "DELETE") {
+      state.bikes = state.bikes.filter((b) => b !== bike);
+      state.activities.forEach((a) => a.bikeId === bike.id && (a.bikeId = null)); // ON DELETE SET NULL
+      return send(res, 204);
+    }
+    Object.assign(bike, body);
+    return send(res, 200, bike);
+  }
+  if (route === "GET /api/v1/devices") return send(res, 200, { items: state.devices });
+  if (route === "POST /api/v1/devices") {
+    const device = {
+      id: randomUUID(),
+      displayName: body.displayName,
+      manufacturer: body.manufacturer ?? null,
+      model: body.model ?? null,
+      createdAt: new Date().toISOString(),
+    };
+    state.devices.push(device);
+    return send(res, 201, device);
+  }
+  if (route === "PATCH /api/v1/me/preferences") {
+    state.timeZone = body.timeZone ?? state.timeZone;
+    return send(res, 200, { locale: "es-MX", timeZone: state.timeZone, distanceUnit: "km", elevationUnit: "m" });
+  }
+  const patchMatch = /^PATCH \/api\/v1\/activities\/([\w-]+)$/.exec(route);
+  if (patchMatch) {
+    const found = state.activities.find((a) => a.id === patchMatch[1]);
+    if (!found) return send(res, 404, { title: "No encontrado", status: 404, detail: "La actividad no existe." });
+    if (body.bikeId && !state.bikes.some((b) => b.id === body.bikeId)) {
+      return send(res, 400, { title: "Solicitud inválida", status: 400, detail: "La bicicleta no existe." });
+    }
+    if (body.title !== undefined) found.title = body.title;
+    if (body.subType !== undefined) found.subType = body.subType;
+    if (body.bikeId !== undefined) found.bikeId = body.bikeId;
+    return send(res, 200, detail(found));
+  }
   if (route === "POST /api/v1/activities/imports") {
     state.lastUploadBytes = raw.length;
     const jobId = startImport(raw);
@@ -411,7 +472,7 @@ createServer(async (req, res) => {
     return send(res, 200, {
       id: "6f1c3c62-5a0e-4a4e-9a51-0b2c8f8d2f10",
       email: OWNER.email,
-      preferences: { locale: "es-MX", timeZone: "America/Mexico_City", distanceUnit: "km", elevationUnit: "m" },
+      preferences: { locale: "es-MX", timeZone: state.timeZone, distanceUnit: "km", elevationUnit: "m" },
     });
   }
   send(res, 404, { title: "No encontrado", status: 404 });

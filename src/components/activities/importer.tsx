@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
 import { activitiesChanged } from "@/app/(app)/actividades/actions";
+import { SelectField } from "@/components/forms/fields";
 import { TERMINAL_STATUSES, pollJob, type ImportJob, type JobStatus } from "@/lib/imports/poll";
 import { formatFileSize } from "@/lib/format/units";
 
@@ -19,6 +20,7 @@ type ItemState = "waiting" | "uploading" | JobStatus | "error";
 type Item = {
   key: number;
   file: File;
+  bikeId: string;
   state: ItemState;
   activityId?: string | null;
   errorKey?: string;
@@ -54,7 +56,7 @@ function outcomeOf(job: ImportJob): Outcome {
   };
 }
 
-async function importFile(file: File, onUpdate: (patch: Outcome) => void): Promise<Outcome> {
+async function importFile(file: File, bikeId: string, onUpdate: (patch: Outcome) => void): Promise<Outcome> {
   const fail = (errorKey: string, detail?: string): Outcome => ({ state: "error", errorKey, detail });
   try {
     // Pasa por Proxy: deja un access token vigente antes de la subida, que va fuera de Proxy.
@@ -64,6 +66,7 @@ async function importFile(file: File, onUpdate: (patch: Outcome) => void): Promi
     onUpdate({ state: "uploading" });
     const form = new FormData();
     form.append("file", file);
+    if (bikeId) form.append("bikeId", bikeId);
     const upload = await fetch("/api/importaciones", { method: "POST", body: form });
     const accepted = (await upload.json().catch(() => ({}))) as { jobId?: string; error?: string; detail?: string };
     if (upload.status !== 202 || !accepted.jobId) {
@@ -78,8 +81,10 @@ async function importFile(file: File, onUpdate: (patch: Outcome) => void): Promi
   }
 }
 
-export function Importer() {
+export function Importer({ bikes }: { bikes: { id: string; name: string }[] }) {
   const t = useTranslations("imports");
+  const [bikeId, setBikeId] = useState("");
+  // La bicicleta elegida al agregar cada archivo viaja con él: cambiarla después no altera los que ya están en cola.
   const [items, setItems] = useState<Item[]>([]);
   const [dragging, setDragging] = useState(false);
   const running = useRef(false);
@@ -98,7 +103,7 @@ export function Importer() {
     const rejected = precheck(next.file);
     const work = rejected
       ? Promise.resolve<Outcome>({ state: "error", errorKey: rejected })
-      : importFile(next.file, (patch) => update(next.key, patch));
+      : importFile(next.file, next.bikeId, (patch) => update(next.key, patch));
     void work.then(async (outcome) => {
       if (outcome.state === "COMPLETED") {
         await activitiesChanged().catch(() => undefined);
@@ -110,7 +115,7 @@ export function Importer() {
 
   function add(files: FileList | null) {
     if (!files || files.length === 0) return;
-    const added = Array.from(files, (file) => ({ key: nextKey.current++, file, state: "waiting" as const }));
+    const added = Array.from(files, (file) => ({ key: nextKey.current++, file, bikeId, state: "waiting" as const }));
     setItems((current) => [...current, ...added]);
   }
 
@@ -127,6 +132,22 @@ export function Importer() {
 
   return (
     <div className="flex flex-col gap-6">
+      {bikes.length > 0 && (
+        <SelectField
+          name="bikeId"
+          label={t("bike")}
+          hint={t("bikeHint")}
+          defaultValue=""
+          onChange={(value) => setBikeId(value)}
+        >
+          <option value="">{t("noBike")}</option>
+          {bikes.map((bike) => (
+            <option key={bike.id} value={bike.id}>
+              {bike.name}
+            </option>
+          ))}
+        </SelectField>
+      )}
       <label
         onDragOver={(event) => {
           event.preventDefault();

@@ -7,6 +7,8 @@ import { Suspense } from "react";
 import { ActivityActions } from "@/components/activities/activity-actions";
 import { ActivityCharts } from "@/components/activities/activity-charts";
 import { DuplicatesNotice } from "@/components/activities/duplicates-notice";
+import { EditActivityDialog } from "@/components/settings/dialogs";
+import { listAllBikes } from "@/lib/catalog/data";
 import { ActivityMap } from "@/components/activities/activity-map";
 import { LapsTable } from "@/components/activities/laps-table";
 import { getActivity, getLaps, getStreams, type ActivityDetail } from "@/lib/activities/data";
@@ -54,11 +56,12 @@ type DetailProps = Pick<PageProps<"/actividades/[id]">, "params" | "searchParams
 async function Detail({ params, searchParams }: DetailProps) {
   const [{ id }, { aviso }] = await Promise.all([params, searchParams]);
   if (!UUID.test(id)) notFound();
-  const [result, t, tn, hasBasemap] = await Promise.all([
+  const [result, t, tn, hasBasemap, bikes] = await Promise.all([
     getActivity(id),
     getTranslations("activities"),
     getTranslations("notices"),
     basemapAvailable(),
+    listAllBikes(),
   ]);
   if (!result.ok) {
     if (result.error === "notFound") notFound();
@@ -69,13 +72,21 @@ async function Detail({ params, searchParams }: DetailProps) {
     );
   }
   const activity = result.data;
+  const bikeName = bikes?.find((bike) => bike.id === activity.bikeId)?.name;
   return (
     <>
-      <header className="flex flex-col gap-1">
-        <p className="text-tinta-suave">
-          {formatWeekdayDate(activity.localStartDate)}, {t(`types.${activity.subType}`)}
-        </p>
-        <h1 className="text-4xl font-bold tracking-tight">{activity.title}</h1>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <p className="text-tinta-suave">
+            {formatWeekdayDate(activity.localStartDate)}, {t(`types.${activity.subType}`)}
+            {bikeName && `, ${bikeName}`}
+          </p>
+          <h1 className="text-4xl font-bold tracking-tight">{activity.title}</h1>
+        </div>
+        <EditActivityDialog
+          activity={{ id: activity.id, title: activity.title, subType: activity.subType, bikeId: activity.bikeId }}
+          bikes={(bikes ?? []).map(({ id, name, active }) => ({ id, name, active }))}
+        />
       </header>
       {aviso === "duplicado-resuelto" && (
         <p role="status" className="rounded-lg border border-positivo bg-superficie px-4 py-3 font-medium">
