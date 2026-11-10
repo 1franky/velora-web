@@ -219,5 +219,46 @@
     "trackUnavailable": "No pudimos cargar el recorrido. Intenta recargar la página.",
     "noBasemap": "El mapa base no está instalado en este servidor; el recorrido se muestra sin calles. Para instalarlo, ejecuta pnpm basemap.",
     "canvasLabel": "Mapa interactivo: usa las flechas para moverte y las teclas + y − para acercar o alejar"
+  },
+  "charts": {
+    "title": "Gráficas",
+    "axis": "Eje horizontal",
+    "axes": {
+      "distance": "Distancia",
+      "time": "Tiempo"
+    },
+    "hint": "Pasa el cursor o el dedo sobre una gráfica para ver los valores y el punto en el mapa.",
+    "atDistance": "En el km {km}",
+    "atTime": "A las {time} del inicio",
+    "range": "mín. {min}, máx. {max}",
+    "noValue": "sin dato",
+    "series": {
+      "ALTITUDE": "Altitud",
+      "SPEED": "Velocidad",
+      "HEART_RATE": "Frecuencia cardiaca",
+      "POWER": "Potencia",
+      "CADENCE": "Cadencia",
+      "TEMPERATURE": "Temperatura"
+    },
+    "units": {
+      "ALTITUDE": "{value} m",
+      "SPEED": "{value} km/h",
+      "HEART_RATE": "{value} ppm",
+      "POWER": "{value} W",
+      "CADENCE": "{value} rpm",
+      "TEMPERATURE": "{value} °C"
+    },
+    "unavailable": "No pudimos cargar las gráficas. Intenta recargar la página."
+  },
+  "laps": {
+    "title": "Vueltas",
+    "caption": "Vueltas registradas por el dispositivo",
+    "lap": "Vuelta",
+    "distance": "Distancia",
+    "time": "Tiempo",
+    "speed": "Vel. media",
+    "heartRate": "FC media",
+    "power": "Potencia media",
+    "cadence": "Cadencia media"
   }
 }

@@ -48,6 +48,7 @@ pnpm dev            # http://localhost:3000
 - **Tema**: claro, oscuro o según el dispositivo; se guarda solo en el navegador (`velora-tema`) y un script en línea lo aplica antes del primer pintado.
 - **Tipografía**: Barlow y Barlow Semi Condensed, autoalojadas con `next/font`; cifras tabulares con la clase `cifras`.
 - **Estructura**: riel lateral en escritorio y barra inferior con "Más" en móvil; la sección activa se marca con una franja de carril.
+- **Gráficas** (ECharts): un panel por serie con un solo eje y cursor sincronizado entre paneles y con el mapa. Las series se reducen en el servidor a ~1 200 puntos promediando tramos; mínimo y máximo usan todas las muestras. Trazos en `--grafica` (`#c76a0e` / `#d07c26`), validados contra ambas superficies (banda de luminosidad, croma y contraste ≥ 3:1). Sin cursor, cada panel muestra mínimo y máximo.
 - **Accesibilidad**: enlace para saltar al contenido, foco visible, `prefers-reduced-motion` respetado y pruebas axe (WCAG 2.1 AA) en claro y oscuro.
 
 ## Repositorios relacionados

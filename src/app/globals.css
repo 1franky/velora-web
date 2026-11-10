@@ -15,6 +15,7 @@
   --acento: #9a4a06; /* texto y botones con texto blanco (6.3:1) */
   --acento-medio: #c76a0e; /* carril de navegación, gráficas, foco */
   --acento-texto-sobre: #ffffff;
+  --grafica: #c76a0e; /* trazos de gráficas: validado (banda de luminosidad, croma, ≥ 3:1) */
   --positivo: #2f6b4f;
   --negativo: #a3392a;
   color-scheme: light;
@@ -31,6 +32,7 @@
     --acento: #f2a03d;
     --acento-medio: #f2a03d;
     --acento-texto-sobre: #121a24;
+    --grafica: #d07c26; /* el acento oscuro (#f2a03d) es demasiado claro para un trazo */
     --positivo: #6fc59a;
     --negativo: #f08a78;
     color-scheme: dark;
@@ -47,6 +49,7 @@
   --acento: #f2a03d;
   --acento-medio: #f2a03d;
   --acento-texto-sobre: #121a24;
+  --grafica: #d07c26;
   --positivo: #6fc59a;
   --negativo: #f08a78;
   color-scheme: dark;

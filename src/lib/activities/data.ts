@@ -60,3 +60,31 @@ export const getActivity = cache(async function getActivity(
     return failure(undefined);
   }
 });
+
+export type ActivityLap = components["schemas"]["ActivityLap"];
+
+export async function getStreams(id: string): Promise<Loaded<components["schemas"]["ActivityStreams"]>> {
+  try {
+    const { data, response } = await (
+      await api()
+    ).GET("/activities/{activityId}/streams", {
+      params: { path: { activityId: id } },
+    });
+    return data ? { ok: true, data } : failure(response.status);
+  } catch {
+    return failure(undefined);
+  }
+}
+
+export async function getLaps(id: string): Promise<Loaded<ActivityLap[]>> {
+  try {
+    const { data, response } = await (
+      await api()
+    ).GET("/activities/{activityId}/laps", {
+      params: { path: { activityId: id } },
+    });
+    return data ? { ok: true, data: data.items } : failure(response.status);
+  } catch {
+    return failure(undefined);
+  }
+}

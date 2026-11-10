@@ -5,6 +5,7 @@ import type { GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
 import type { components } from "@/lib/api/schema";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import { hoverPosition } from "@/lib/activities/hover";
 import { TRACK_COLORS, TRACK_SOURCE, basemapStyle, trackZoomFor, type MapTheme } from "@/lib/basemap/style";
 import { subscribeTheme } from "@/lib/theme";
 
@@ -55,6 +56,35 @@ function drawTrack(map: MapLibreMap, track: TrackFeature, theme: MapTheme) {
     source: TRACK_SOURCE,
     layout,
     paint: { "line-color": colors.line, "line-width": ["interpolate", ["linear"], ["zoom"], 8, 2, 16, 5] },
+  });
+}
+
+const POSITION_SOURCE = "posicion";
+
+/** Punto señalado en las gráficas; idempotente como drawTrack. */
+function drawPosition(map: MapLibreMap, theme: MapTheme) {
+  const position = hoverPosition.get();
+  const data = {
+    type: "FeatureCollection",
+    features: position ? [{ type: "Feature", geometry: { type: "Point", coordinates: position }, properties: {} }] : [],
+  } as SourceData;
+  const source = map.getSource(POSITION_SOURCE);
+  if (source && "setData" in source) {
+    (source as GeoJSONSource).setData(data);
+    return;
+  }
+  map.addSource(POSITION_SOURCE, { type: "geojson", data });
+  const colors = TRACK_COLORS[theme];
+  map.addLayer({
+    id: POSITION_SOURCE,
+    type: "circle",
+    source: POSITION_SOURCE,
+    paint: {
+      "circle-radius": 7,
+      "circle-color": colors.line,
+      "circle-stroke-color": colors.casing,
+      "circle-stroke-width": 3,
+    },
   });
 }
 
@@ -127,6 +157,12 @@ export function ActivityMap({ activityId, hasBasemap }: { activityId: string; ha
       await loaded;
       if (cancelled) return;
       drawTrack(instance, track, theme);
+      // El punto señalado en las gráficas.
+      drawPosition(instance, theme);
+      cleanups.push(
+        hoverPosition.subscribe(() => instance.getSource(POSITION_SOURCE) && drawPosition(instance, theme)),
+      );
+
       // Más detalle al acercarse; al alejarse se conserva el ya descargado.
       const refine = async () => {
         const zoom = trackZoomFor(instance.getZoom());
@@ -151,7 +187,10 @@ export function ActivityMap({ activityId, hasBasemap }: { activityId: string; ha
         if (next === theme) return;
         theme = next;
         instance.setStyle(basemapStyle(theme, window.location.origin, hasBasemap), { diff: false });
-        instance.once("style.load", () => track && drawTrack(instance, track, theme));
+        instance.once("style.load", () => {
+          if (track) drawTrack(instance, track, theme);
+          drawPosition(instance, theme);
+        });
       };
       const unsubscribe = subscribeTheme(onTheme);
       media.addEventListener("change", onTheme);
