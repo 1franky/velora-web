@@ -83,6 +83,8 @@ test.describe("lista", () => {
   });
 
   test("no tiene violaciones de accesibilidad WCAG A/AA", async ({ page }) => {
+    // Tras el login la navegación es del cliente: el título llega al terminar; axe debe ver la página asentada.
+    await expect(page).toHaveTitle("Actividades · Velora");
     await expectNoViolations(page);
   });
 });

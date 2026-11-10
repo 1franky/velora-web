@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import { hoverPosition } from "@/lib/activities/hover";
 import { nearestIndex, type ChartSeriesKey, type PreparedSeries } from "@/lib/activities/series";
 import { formatDuration } from "@/lib/format/units";
-import { subscribeTheme } from "@/lib/theme";
+import { resolvedTheme, subscribeResolvedTheme } from "@/lib/theme";
 
 type Axis = "distance" | "time";
 
@@ -31,22 +31,6 @@ function themeColors() {
   return { line: read("--grafica"), grid: read("--linea"), text: read("--tinta-suave"), ink: read("--tinta") };
 }
 
-function subscribeAllThemes(onChange: () => void) {
-  const media = window.matchMedia("(prefers-color-scheme: dark)");
-  const unsubscribe = subscribeTheme(onChange);
-  media.addEventListener("change", onChange);
-  return () => {
-    unsubscribe();
-    media.removeEventListener("change", onChange);
-  };
-}
-
-function resolvedTheme() {
-  const forced = document.documentElement.dataset.theme;
-  if (forced) return forced;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
 /**
  * Series de la actividad en paneles apilados con un eje compartido (nunca dos escalas en un panel). El cursor se
  * sincroniza entre paneles y con el mapa. El valor señalado se lee en el encabezado de cada panel; sin cursor, el
@@ -66,7 +50,7 @@ export function ActivityCharts({ data }: { data: PreparedSeries }) {
   );
   const containers = useRef<(HTMLDivElement | null)[]>([]);
   // El tema se observa para repintar; el valor no se usa en el render.
-  const themeVersion = useSyncExternalStore(subscribeAllThemes, resolvedTheme, () => "");
+  const themeVersion = useSyncExternalStore(subscribeResolvedTheme, resolvedTheme, () => "");
 
   useEffect(() => {
     let cancelled = false;

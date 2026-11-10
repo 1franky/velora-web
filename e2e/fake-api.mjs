@@ -128,6 +128,71 @@ function syntheticStreams(indoor) {
   };
 }
 
+/** Hoy para la API falsa: lunes 9/11/2026 (la semana en curso aún no tiene rodadas). */
+const TODAY = "2026-11-09";
+
+function totals(activities, from, to) {
+  const inRange = activities.filter((a) => (!from || a.localStartDate >= from) && (!to || a.localStartDate <= to));
+  return {
+    from,
+    to,
+    activityCount: inRange.length,
+    distanceMeters: inRange.reduce((sum, a) => sum + (a.distanceMeters ?? 0), 0),
+    movingTimeSeconds: inRange.reduce((sum, a) => sum + a.movingTimeSeconds, 0),
+    elevationGainMeters: inRange.reduce((sum, a) => sum + (a.elevationGainMeters ?? 0), 0),
+  };
+}
+
+const iso = (date) => date.toISOString().slice(0, 10);
+const addDays = (day, n) => iso(new Date(Date.parse(`${day}T00:00:00Z`) + n * 86_400_000));
+
+function dashboard(period) {
+  const all = state.activities;
+  const today = new Date(`${TODAY}T00:00:00Z`);
+  const [y, m] = [today.getUTCFullYear(), today.getUTCMonth()];
+  const monthStart = (year, month) => iso(new Date(Date.UTC(year, month, 1)));
+  const monthEnd = (year, month) => iso(new Date(Date.UTC(year, month + 1, 0)));
+  let current;
+  let previous = null;
+  if (period === "week") {
+    const monday = addDays(TODAY, -((today.getUTCDay() + 6) % 7));
+    current = totals(all, monday, addDays(monday, 6));
+    previous = totals(all, addDays(monday, -7), addDays(monday, -1));
+  } else if (period === "year") {
+    current = totals(all, `${y}-01-01`, `${y}-12-31`);
+    previous = totals(all, `${y - 1}-01-01`, `${y - 1}-12-31`);
+  } else if (period === "all") {
+    current = totals(all, null, null);
+  } else {
+    current = totals(all, monthStart(y, m), monthEnd(y, m));
+    previous = totals(all, monthStart(y, m - 1), monthEnd(y, m - 1));
+  }
+  const monthlyTrend = Array.from({ length: 12 }, (_, i) => {
+    const date = new Date(Date.UTC(y, m - 11 + i, 1));
+    const month = totals(
+      all,
+      monthStart(date.getUTCFullYear(), date.getUTCMonth()),
+      monthEnd(date.getUTCFullYear(), date.getUTCMonth()),
+    );
+    return {
+      month: iso(date).slice(0, 7),
+      activityCount: month.activityCount,
+      distanceMeters: month.distanceMeters,
+      movingTimeSeconds: month.movingTimeSeconds,
+      elevationGainMeters: month.elevationGainMeters,
+    };
+  });
+  const latest = [...all].sort((a, b) => Date.parse(b.startedAt) - Date.parse(a.startedAt))[0];
+  return {
+    period,
+    timeZone: "America/Mexico_City",
+    current,
+    previous,
+    monthlyTrend,
+    latestActivity: latest ? publicSummary(latest) : null,
+  };
+}
+
 const LAPS = [1, 2, 3].map((lapNumber) => ({
   lapNumber,
   startedAt: null,
@@ -329,6 +394,9 @@ createServer(async (req, res) => {
     return unauthorized(res, "Inicia sesión para continuar.");
   }
   if (route === "GET /api/v1/activities") return send(res, 200, listActivities(url.searchParams));
+  if (route === "GET /api/v1/dashboard/summary") {
+    return send(res, 200, dashboard(url.searchParams.get("period") ?? "month"));
+  }
   if (route === "GET /api/v1/bikes") return send(res, 200, { items: [BIKE] });
   if (route === "POST /api/v1/activities/imports") {
     state.lastUploadBytes = raw.length;
