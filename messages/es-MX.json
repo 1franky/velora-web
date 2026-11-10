@@ -5,7 +5,27 @@
   },
   "home": {
     "title": "Velora",
-    "tagline": "Tu historial de rodadas, bajo tu control.",
+    "greeting": "Hola, {email}",
+    "loadingUser": "Cargando tu cuenta…",
     "status": "En construcción: pronto podrás ver aquí tus rodadas, métricas y mapas."
+  },
+  "login": {
+    "title": "Iniciar sesión",
+    "subtitle": "Entra a tu historial de rodadas.",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "submit": "Entrar",
+    "submitting": "Entrando…",
+    "errors": {
+      "required": "Escribe tu correo y tu contraseña.",
+      "invalidCredentials": "Correo o contraseña incorrectos.",
+      "tooManyAttempts": "Demasiados intentos. Espera {minutes, plural, one {# minuto} other {# minutos}} antes de volver a intentarlo.",
+      "invalidInput": "Revisa que el correo tenga un formato válido.",
+      "unavailable": "No pudimos conectar con el servicio. Intenta de nuevo en unos momentos."
+    }
+  },
+  "session": {
+    "logout": "Cerrar sesión",
+    "unavailable": "No pudimos cargar tu cuenta. Intenta recargar la página."
   }
 }
