@@ -30,6 +30,10 @@ pnpm dev            # http://localhost:3000
 | `pnpm api:types`                                     | Regenera `src/lib/api/schema.d.ts` desde el contrato de `velora-api` fijado en `package.json` (`velora.contractRef`); `--local` usa `../velora-api` |
 | `pnpm api:check`                                     | Verifica que los tipos coinciden con el contrato fijado (CI)                                                                                        |
 
+**Variables de entorno** (ver `.env.example`): `VELORA_API_URL`, URL de `velora-api` que solo conoce el servidor de Next.js.
+
+**Autenticación (ADR-014):** el servidor de Next.js es el único cliente de la API. Login y logout son server actions; los tokens viven en cookies `HttpOnly` (`__Host-` y `Secure` en producción) y el navegador nunca los ve. `src/proxy.ts` redirige al login sin sesión y renueva el access token antes de que caduque con un único refresh compartido entre solicitudes simultáneas (la API revoca la sesión si un refresh token se reutiliza). Las pruebas E2E usan una API falsa (`e2e/fake-api.mjs`) con la misma rotación estricta.
+
 **Cadena de suministro:** `pnpm-workspace.yaml` exige que las dependencias tengan al menos 3 días publicadas y bloquea scripts de instalación salvo los aprobados explícitamente.
 
 **Textos:** todo texto visible vive en `messages/es-MX.json` (next-intl); los formatos de números, unidades, duraciones y fechas usan `Intl` con es-MX (`src/lib/format`).
