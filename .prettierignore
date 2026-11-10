@@ -10,3 +10,6 @@ public/tiles
 AGENTS.md
 CLAUDE.md
 CODEX.md
+e2e/fixtures/
+public/vendor/
+basemap/

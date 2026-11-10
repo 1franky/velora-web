@@ -145,8 +145,7 @@
       "watts": "{value} W",
       "rpm": "{value} rpm",
       "source": "Importada de un archivo {format} de {size} el {date}.",
-      "derived": "Calculada por Velora",
-      "moreSoon": "Pronto verás aquí el mapa del recorrido, el perfil de elevación y las gráficas de la rodada."
+      "derived": "Calculada por Velora"
     }
   },
   "imports": {
@@ -204,5 +203,21 @@
     "title": "No encontramos esta página",
     "body": "Puede que el enlace esté mal escrito o que lo que buscabas ya no exista.",
     "home": "Ir al inicio"
+  },
+  "map": {
+    "label": "Mapa del recorrido",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "resetBearing": "Orientar al norte",
+    "fullscreenEnter": "Ver en pantalla completa",
+    "fullscreenExit": "Salir de pantalla completa",
+    "toggleAttribution": "Mostrar créditos del mapa",
+    "gestureWindows": "Usa Ctrl + rueda del ratón para acercar o alejar el mapa",
+    "gestureMac": "Usa ⌘ + rueda o gesto para acercar o alejar el mapa",
+    "gestureMobile": "Usa dos dedos para mover el mapa",
+    "noWebgl": "Tu navegador no puede mostrar el mapa (WebGL desactivado o no disponible).",
+    "trackUnavailable": "No pudimos cargar el recorrido. Intenta recargar la página.",
+    "noBasemap": "El mapa base no está instalado en este servidor; el recorrido se muestra sin calles. Para instalarlo, ejecuta pnpm basemap.",
+    "canvasLabel": "Mapa interactivo: usa las flechas para moverte y las teclas + y − para acercar o alejar"
   }
 }

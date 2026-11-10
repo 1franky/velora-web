@@ -67,6 +67,28 @@ function detail(summary) {
   };
 }
 
+/**
+ * Zigzag sintético (no es un recorrido real) en dos tramos; menos puntos a menor zoom, como la simplificación de la
+ * API.
+ */
+function syntheticTrack(activityId, zoom) {
+  const total = 400;
+  const step = zoom >= 14 ? 1 : zoom >= 12 ? 4 : 10;
+  const points = [];
+  for (let i = 0; i < total; i += step) {
+    points.push([-100.0 + i * 0.00012 + Math.sin(i / 25) * 0.004, 20.0 + i * 0.00008]);
+  }
+  const half = Math.floor(points.length / 2);
+  const lons = points.map((p) => p[0]);
+  const lats = points.map((p) => p[1]);
+  return {
+    type: "Feature",
+    bbox: [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)],
+    geometry: { type: "MultiLineString", coordinates: [points.slice(0, half), points.slice(half - 1)] },
+    properties: { activityId, pointCount: total, returnedPointCount: points.length, zoom },
+  };
+}
+
 let state;
 function reset() {
   state = {
@@ -78,6 +100,7 @@ function reset() {
     activities: seedActivities(),
     jobs: new Map(),
     lastUploadBytes: 0,
+    trackZooms: [],
   };
 }
 reset();
@@ -196,6 +219,7 @@ createServer(async (req, res) => {
       refreshCalls: state.refreshCalls,
       logins: state.logins,
       lastUploadBytes: state.lastUploadBytes,
+      trackZooms: state.trackZooms,
     });
   }
 
@@ -239,6 +263,21 @@ createServer(async (req, res) => {
   if (jobMatch) {
     const found = job(jobMatch[1]);
     return found ? send(res, 200, found) : send(res, 404, { title: "No encontrado", status: 404 });
+  }
+  const trackMatch = /^GET \/api\/v1\/activities\/([\w-]+)\/track$/.exec(route);
+  if (trackMatch) {
+    const found = state.activities.find((a) => a.id === trackMatch[1]);
+    if (!found) return send(res, 404, { title: "No encontrado", status: 404 });
+    if (found.subType === "INDOOR") {
+      return send(res, 404, {
+        title: "No encontrado",
+        status: 404,
+        detail: "La actividad no tiene recorrido con GPS.",
+      });
+    }
+    const zoom = Number(url.searchParams.get("zoom") ?? 14);
+    state.trackZooms.push(zoom);
+    return send(res, 200, syntheticTrack(found.id, zoom));
   }
   const activityMatch = /^GET \/api\/v1\/activities\/([\w-]+)$/.exec(route);
   if (activityMatch) {
