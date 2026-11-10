@@ -4,8 +4,11 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { ActivityCharts } from "@/components/activities/activity-charts";
 import { ActivityMap } from "@/components/activities/activity-map";
-import { getActivity, type ActivityDetail } from "@/lib/activities/data";
+import { LapsTable } from "@/components/activities/laps-table";
+import { getActivity, getLaps, getStreams, type ActivityDetail } from "@/lib/activities/data";
+import { prepareSeries } from "@/lib/activities/series";
 import { basemapAvailable } from "@/lib/basemap/available";
 import {
   MISSING,
@@ -71,6 +74,16 @@ async function Detail({ params }: { params: PageProps<"/actividades/[id]">["para
       </header>
       {activity.hasTrack && <ActivityMap activityId={activity.id} hasBasemap={hasBasemap} />}
       <Metrics activity={activity} />
+      {activity.streamTypes.length > 0 && (
+        <Suspense fallback={<div aria-hidden className="h-96 animate-pulse rounded-lg bg-superficie-hundida" />}>
+          <Charts id={activity.id} />
+        </Suspense>
+      )}
+      {activity.lapCount > 1 && (
+        <Suspense>
+          <Laps id={activity.id} />
+        </Suspense>
+      )}
       <p className="text-sm text-tinta-suave">
         {t("detail.source", {
           format: activity.originalFile.format,
@@ -130,4 +143,21 @@ async function Metrics({ activity }: { activity: ActivityDetail }) {
       )}
     </section>
   );
+}
+
+/** Series reducidas en el servidor (~1 200 puntos): el navegador no recibe las ~14 000 muestras por serie. */
+async function Charts({ id }: { id: string }) {
+  const [result, t] = await Promise.all([getStreams(id), getTranslations("charts")]);
+  if (!result.ok) {
+    return <p className="text-tinta-suave">{t("unavailable")}</p>;
+  }
+  const prepared = prepareSeries(result.data.streams, result.data.sampleCount);
+  return prepared.series.length > 0 && (prepared.distanceKm || prepared.elapsedSeconds) ? (
+    <ActivityCharts data={prepared} />
+  ) : null;
+}
+
+async function Laps({ id }: { id: string }) {
+  const result = await getLaps(id);
+  return result.ok && result.data.length > 1 ? <LapsTable laps={result.data} /> : null;
 }

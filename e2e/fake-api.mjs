@@ -61,8 +61,11 @@ function detail(summary) {
     averageCadenceRpm: 84,
     metricsProvenance: { distanceMeters: "DEVICE_REPORTED", movingTimeSeconds: "DERIVED" },
     hasTrack: summary.subType !== "INDOOR",
-    streamTypes: ["TIME", "DISTANCE"],
-    lapCount: 1,
+    streamTypes:
+      summary.subType === "INDOOR"
+        ? ["TIME", "HEART_RATE", "CADENCE", "POWER"]
+        : ["TIME", "LATITUDE", "LONGITUDE", "ALTITUDE", "DISTANCE", "SPEED", "HEART_RATE", "CADENCE"],
+    lapCount: summary.subType === "INDOOR" ? 1 : 3,
     originalFile: { format: "FIT", sizeBytes: 182_345, importedAt: "2026-11-10T03:30:00Z" },
   };
 }
@@ -88,6 +91,49 @@ function syntheticTrack(activityId, zoom) {
     properties: { activityId, pointCount: total, returnedPointCount: points.length, zoom },
   };
 }
+
+/** Una hora a 1 Hz siguiendo el zigzag de syntheticTrack; en rodillo, sin GPS ni distancia pero con potencia. */
+function syntheticStreams(indoor) {
+  const n = 3_600;
+  const time = Array.from({ length: n }, (_, i) => i * 1000);
+  const heart = time.map((_, i) => 120 + Math.round(30 * Math.sin(i / 600)));
+  const cadence = time.map((_, i) => (i % 900 < 30 ? null : 82 + (i % 7)));
+  if (indoor) {
+    return {
+      sampleCount: n,
+      streams: { TIME: time, HEART_RATE: heart, CADENCE: cadence, POWER: time.map((_, i) => 180 + (i % 60)) },
+    };
+  }
+  const track = time.map((_, i) => i / 9);
+  return {
+    sampleCount: n,
+    streams: {
+      TIME: time,
+      LATITUDE: track.map((t) => 20.0 + t * 0.00008),
+      LONGITUDE: track.map((t) => -100.0 + t * 0.00012 + Math.sin(t / 25) * 0.004),
+      ALTITUDE: time.map((_, i) => 2_000 + 150 * Math.sin(i / 500)),
+      DISTANCE: time.map((_, i) => i * 4.17),
+      SPEED: time.map((_, i) => 4.17 + Math.sin(i / 120)),
+      HEART_RATE: heart,
+      CADENCE: cadence,
+    },
+  };
+}
+
+const LAPS = [1, 2, 3].map((lapNumber) => ({
+  lapNumber,
+  startedAt: null,
+  elapsedTimeSeconds: 1_200,
+  timerTimeSeconds: 1_180,
+  distanceMeters: 5_000,
+  averageSpeedMps: 4.2,
+  maxSpeedMps: 7.5,
+  averageHeartRateBpm: 130 + lapNumber * 5,
+  maxHeartRateBpm: 170,
+  averageCadenceRpm: 84,
+  averagePowerWatts: null,
+  maxPowerWatts: null,
+}));
 
 let state;
 function reset() {
@@ -278,6 +324,15 @@ createServer(async (req, res) => {
     const zoom = Number(url.searchParams.get("zoom") ?? 14);
     state.trackZooms.push(zoom);
     return send(res, 200, syntheticTrack(found.id, zoom));
+  }
+  const extraMatch = /^GET \/api\/v1\/activities\/([\w-]+)\/(streams|laps)$/.exec(route);
+  if (extraMatch) {
+    const found = state.activities.find((a) => a.id === extraMatch[1]);
+    if (!found) return send(res, 404, { title: "No encontrado", status: 404 });
+    const indoor = found.subType === "INDOOR";
+    return extraMatch[2] === "streams"
+      ? send(res, 200, syntheticStreams(indoor))
+      : send(res, 200, { items: indoor ? LAPS.slice(0, 1) : LAPS });
   }
   const activityMatch = /^GET \/api\/v1\/activities\/([\w-]+)$/.exec(route);
   if (activityMatch) {
