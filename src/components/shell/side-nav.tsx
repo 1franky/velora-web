@@ -3,17 +3,34 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Suspense } from "react";
 import { NAV_ITEMS, isActive } from "./nav-items";
 
-/** Riel lateral de escritorio. La sección activa se marca con una franja de carril en cempasúchil. */
+/**
+ * Riel lateral de escritorio. La sección activa se marca con una franja de carril en cempasúchil.
+ *
+ * La ruta actual es un dato de la solicitud en rutas dinámicas: el respaldo (sin sección activa) se prerenderiza y
+ * la versión con la ruta llega enseguida.
+ */
 export function SideNav() {
+  return (
+    <Suspense fallback={<SideNavList pathname={null} />}>
+      <CurrentSideNav />
+    </Suspense>
+  );
+}
+
+function CurrentSideNav() {
+  return <SideNavList pathname={usePathname()} />;
+}
+
+function SideNavList({ pathname }: { pathname: string | null }) {
   const t = useTranslations();
-  const pathname = usePathname();
   return (
     <nav aria-label={t("shell.primaryNav")}>
       <ul className="flex flex-col gap-1">
         {NAV_ITEMS.map(({ key, href, icon: Icon }) => {
-          const active = isActive(href, pathname);
+          const active = pathname !== null && isActive(href, pathname);
           return (
             <li key={key}>
               <Link

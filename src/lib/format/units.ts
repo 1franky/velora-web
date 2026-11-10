@@ -69,3 +69,43 @@ export function formatLocalDate(isoDate: string | null | undefined): string {
   }
   return calendarDate.format(new Date(`${isoDate}T00:00:00Z`));
 }
+
+const weekdayDate = new Intl.DateTimeFormat(LOCALE, {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+/** Fecha local "YYYY-MM-DD" con día de la semana, para listas: "dom, 9 nov 2026". */
+export function formatWeekdayDate(isoDate: string | null | undefined): string {
+  if (!isoDate) {
+    return MISSING;
+  }
+  return weekdayDate.format(new Date(`${isoDate}T00:00:00Z`)).replaceAll(".", "");
+}
+
+const megabytes = new Intl.NumberFormat(LOCALE, { style: "unit", unit: "megabyte", maximumFractionDigits: 1 });
+const kilobytes = new Intl.NumberFormat(LOCALE, { style: "unit", unit: "kilobyte", maximumFractionDigits: 0 });
+
+/** Tamaño de archivo en KB o MB (base 1024, como lo muestran los sistemas operativos). */
+export function formatFileSize(bytes: number): string {
+  const kb = bytes / 1024;
+  return kb < 1024 ? kilobytes.format(Math.max(1, kb)) : megabytes.format(kb / 1024);
+}
+
+/** Fecha de un instante (ISO con zona) en la zona horaria indicada, como dd/MM/yyyy. */
+export function formatInstantDate(instant: string, timeZone: string): string {
+  const date = new Date(instant);
+  if (Number.isNaN(date.getTime())) {
+    return MISSING;
+  }
+  try {
+    return new Intl.DateTimeFormat(LOCALE, { day: "2-digit", month: "2-digit", year: "numeric", timeZone }).format(
+      date,
+    );
+  } catch {
+    return calendarDate.format(date);
+  }
+}

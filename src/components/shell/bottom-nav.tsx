@@ -4,19 +4,32 @@ import { Ellipsis } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { logout } from "@/lib/auth/actions";
 import { NAV_ITEMS, isActive } from "./nav-items";
 
 /** Barra inferior del móvil: cuatro secciones principales y "Más" con el resto y el cierre de sesión. */
 export function BottomNav() {
+  // Ver SideNav: el respaldo sin sección activa se prerenderiza en rutas dinámicas.
+  return (
+    <Suspense fallback={<BottomNavBar pathname={null} />}>
+      <CurrentBottomNav />
+    </Suspense>
+  );
+}
+
+function CurrentBottomNav() {
+  return <BottomNavBar pathname={usePathname()} />;
+}
+
+function BottomNavBar({ pathname }: { pathname: string | null }) {
   const t = useTranslations();
-  const pathname = usePathname();
   // "Más" queda abierto solo en la ruta donde se abrió: navegar lo cierra sin efectos.
   const [openAt, setOpenAt] = useState<string | null>(null);
-  const open = openAt === pathname;
+  const open = pathname !== null && openAt === pathname;
   const secondary = NAV_ITEMS.filter((item) => !item.primary);
-  const moreActive = secondary.some((item) => isActive(item.href, pathname));
+  const active = (href: string) => pathname !== null && isActive(href, pathname);
+  const moreActive = secondary.some((item) => active(item.href));
 
   return (
     <nav
@@ -30,7 +43,7 @@ export function BottomNav() {
               <li key={key}>
                 <Link
                   href={href}
-                  aria-current={isActive(href, pathname) ? "page" : undefined}
+                  aria-current={active(href) ? "page" : undefined}
                   className="flex items-center gap-3 rounded-md px-3 py-2 font-medium aria-[current=page]:bg-superficie-hundida"
                 >
                   <Icon aria-hidden size={20} strokeWidth={1.75} />
@@ -50,17 +63,19 @@ export function BottomNav() {
       )}
       <ul className="grid grid-cols-5">
         {NAV_ITEMS.filter((item) => item.primary).map(({ key, href, icon: Icon }) => {
-          const active = isActive(href, pathname);
+          const current = active(href);
           return (
             <li key={key}>
               <Link
                 href={href}
-                aria-current={active ? "page" : undefined}
+                aria-current={current ? "page" : undefined}
                 className={`relative flex flex-col items-center gap-0.5 px-1 pt-2.5 pb-2 text-xs font-medium ${
-                  active ? "text-tinta" : "text-tinta-suave"
+                  current ? "text-tinta" : "text-tinta-suave"
                 }`}
               >
-                {active && <span aria-hidden className="absolute inset-x-4 top-0 h-1 rounded-b-full bg-acento-medio" />}
+                {current && (
+                  <span aria-hidden className="absolute inset-x-4 top-0 h-1 rounded-b-full bg-acento-medio" />
+                )}
                 <Icon aria-hidden size={22} strokeWidth={1.75} />
                 {t(`nav.${key}`)}
               </Link>

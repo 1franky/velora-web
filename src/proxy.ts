@@ -46,6 +46,11 @@ export async function proxy(request: NextRequest) {
   if (isLogin) {
     return clearSession(NextResponse.next(), names, secure, Boolean(refresh));
   }
+  if (pathname.startsWith("/api/")) {
+    // Las rutas de datos responden 401 en JSON: una redirección al login llegaría a fetch como HTML con 200.
+    const unauthorized = NextResponse.json({ error: "session" }, { status: 401 });
+    return clearSession(unauthorized, names, secure, Boolean(refresh));
+  }
   const login = new URL("/login", request.url);
   const next = safeNextPath(pathname + search);
   if (next !== "/") {
@@ -68,6 +73,7 @@ function clearSession(
 }
 
 export const config = {
-  // Todo salvo recursos estáticos de Next y archivos con extensión (favicon, imágenes, teselas).
-  matcher: ["/((?!_next/static|_next/image|.*\\.[a-zA-Z0-9]+$).*)"],
+  // Todo salvo recursos estáticos de Next, archivos con extensión (favicon, imágenes, teselas) y la subida de
+  // archivos: Proxy copia el cuerpo en memoria y lo trunca a 10 MB (ver src/lib/imports/upload.ts).
+  matcher: ["/((?!_next/static|_next/image|api/importaciones$|.*\\.[a-zA-Z0-9]+$).*)"],
 };
