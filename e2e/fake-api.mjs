@@ -46,11 +46,18 @@ function seedActivities() {
   });
 }
 
-function detail(summary) {
+/** Sin los campos internos de la API falsa (prefijo _): la web solo debe ver lo que define el contrato. */
+function publicSummary(activity) {
+  return Object.fromEntries(Object.entries(activity).filter(([key]) => !key.startsWith("_")));
+}
+
+function detail(activity) {
+  const summary = publicSummary(activity);
+  const format = activity._format ?? "FIT";
   return {
     ...summary,
     timeZone: "America/Mexico_City",
-    sourceType: "FIT",
+    sourceType: format,
     deviceId: null,
     elevationLossMeters: summary.elevationGainMeters,
     maxSpeedMps: summary.averageSpeedMps === null ? null : summary.averageSpeedMps * 1.8,
@@ -62,11 +69,12 @@ function detail(summary) {
     metricsProvenance: { distanceMeters: "DEVICE_REPORTED", movingTimeSeconds: "DERIVED" },
     hasTrack: summary.subType !== "INDOOR",
     streamTypes:
-      summary.subType === "INDOOR"
+      activity._streamTypes ??
+      (summary.subType === "INDOOR"
         ? ["TIME", "HEART_RATE", "CADENCE", "POWER"]
-        : ["TIME", "LATITUDE", "LONGITUDE", "ALTITUDE", "DISTANCE", "SPEED", "HEART_RATE", "CADENCE"],
+        : ["TIME", "LATITUDE", "LONGITUDE", "ALTITUDE", "DISTANCE", "SPEED", "HEART_RATE", "CADENCE"]),
     lapCount: summary.subType === "INDOOR" ? 1 : 3,
-    originalFile: { format: "FIT", sizeBytes: 182_345, importedAt: "2026-11-10T03:30:00Z" },
+    originalFile: { format, sizeBytes: 182_345, importedAt: "2026-11-10T03:30:00Z" },
   };
 }
 
@@ -193,7 +201,7 @@ function listActivities(query) {
   );
   const offset = query.get("cursor") ? Number(Buffer.from(query.get("cursor"), "base64url").toString()) : 0;
   const limit = Number(query.get("limit") ?? 25);
-  const items = matches.slice(offset, offset + limit);
+  const items = matches.slice(offset, offset + limit).map(publicSummary);
   const next = offset + limit < matches.length ? Buffer.from(String(offset + limit)).toString("base64url") : null;
   return { items, nextCursor: next };
 }
@@ -239,14 +247,17 @@ function job(jobId) {
   entry.polls++;
   const base = {
     jobId,
-    kind: "IMPORT",
+    kind: entry.kind ?? "IMPORT",
     activityId: null,
     errorCode: null,
     errorDetail: null,
     warnings: [],
     possibleDuplicateActivityIds: [],
   };
-  return entry.polls < 2 ? { ...base, status: "PROCESSING" } : { ...base, ...entry.result };
+  if (entry.polls < 2) return { ...base, status: "PROCESSING" };
+  entry.onComplete?.();
+  entry.onComplete = undefined;
+  return { ...base, ...entry.result };
 }
 
 createServer(async (req, res) => {
@@ -260,6 +271,25 @@ createServer(async (req, res) => {
 
   if (route === "POST /__reset") return (reset(), send(res, 204));
   if (route === "POST /__empty") return ((state.activities = []), send(res, 204));
+  if (route === "POST /__duplicados") {
+    // La misma rodada (la más reciente del seed) importada también en GPX (sin FC ni cadencia) y TCX.
+    const original = seedActivities()[0];
+    const copy = (suffix, format, seconds, streamTypes) => ({
+      ...original,
+      id: `d0000000-0000-4000-8000-00000000000${suffix === "GPX" ? 1 : 2}`,
+      title: `${original.title} (${suffix})`,
+      startedAt: new Date(Date.parse(original.startedAt) + seconds * 1000).toISOString(),
+      _format: format,
+      _streamTypes: streamTypes,
+    });
+    state.activities.splice(
+      1,
+      0,
+      copy("GPX", "GPX", 20, ["TIME", "LATITUDE", "LONGITUDE", "ALTITUDE", "DISTANCE"]),
+      copy("TCX", "TCX", 40, ["TIME", "LATITUDE", "LONGITUDE", "ALTITUDE", "DISTANCE", "HEART_RATE"]),
+    );
+    return send(res, 204);
+  }
   if (route === "GET /__stats") {
     return send(res, 200, {
       refreshCalls: state.refreshCalls,
@@ -324,6 +354,42 @@ createServer(async (req, res) => {
     const zoom = Number(url.searchParams.get("zoom") ?? 14);
     state.trackZooms.push(zoom);
     return send(res, 200, syntheticTrack(found.id, zoom));
+  }
+  const deleteMatch = /^DELETE \/api\/v1\/activities\/([\w-]+)$/.exec(route);
+  if (deleteMatch) {
+    const index = state.activities.findIndex((a) => a.id === deleteMatch[1]);
+    if (index === -1) return send(res, 404, { title: "No encontrado", status: 404, detail: "La actividad no existe." });
+    state.activities.splice(index, 1);
+    return send(res, 204);
+  }
+  const reprocessMatch = /^POST \/api\/v1\/activities\/([\w-]+)\/reprocess$/.exec(route);
+  if (reprocessMatch) {
+    const found = state.activities.find((a) => a.id === reprocessMatch[1]);
+    if (!found) return send(res, 404, { title: "No encontrado", status: 404, detail: "La actividad no existe." });
+    const jobId = randomUUID();
+    state.jobs.set(jobId, {
+      polls: 0,
+      kind: "REPROCESS",
+      result: { status: "COMPLETED", activityId: found.id },
+      // Un cambio visible para comprobar que el detalle se actualiza al terminar.
+      onComplete: () => (found.elevationGainMeters = 999),
+    });
+    return send(res, 202, { jobId, status: "QUEUED", statusUrl: `/api/v1/imports/${jobId}` });
+  }
+  const duplicatesMatch = /^GET \/api\/v1\/activities\/([\w-]+)\/possible-duplicates$/.exec(route);
+  if (duplicatesMatch) {
+    const self = state.activities.find((a) => a.id === duplicatesMatch[1]);
+    if (!self) return send(res, 404, { title: "No encontrado", status: 404, detail: "La actividad no existe." });
+    const items = state.activities
+      .filter(
+        (a) =>
+          a.id !== self.id &&
+          a.subType === self.subType &&
+          Math.abs(Date.parse(a.startedAt) - Date.parse(self.startedAt)) <= 120_000,
+      )
+      .sort((x, y) => Date.parse(x.startedAt) - Date.parse(y.startedAt))
+      .map(publicSummary);
+    return send(res, 200, { items });
   }
   const extraMatch = /^GET \/api\/v1\/activities\/([\w-]+)\/(streams|laps)$/.exec(route);
   if (extraMatch) {

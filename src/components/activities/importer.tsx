@@ -5,20 +5,14 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
 import { activitiesChanged } from "@/app/(app)/actividades/actions";
-import type { components } from "@/lib/api/schema";
+import { TERMINAL_STATUSES, pollJob, type ImportJob, type JobStatus } from "@/lib/imports/poll";
 import { formatFileSize } from "@/lib/format/units";
 
-type ImportJob = components["schemas"]["ImportJob"];
-type JobStatus = ImportJob["status"];
 type WarningCode = ImportJob["warnings"][number]["code"];
 
 /** 50 MB por archivo (ADR-009); se comprueba antes de subir para no gastar la conexión. */
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
 const EXTENSIONS = ["fit", "gpx", "tcx"];
-const TERMINAL: readonly JobStatus[] = ["COMPLETED", "DUPLICATE", "REJECTED", "FAILED"];
-/** Espera entre consultas del trabajo: rápida al principio, luego cada 3 s; se rinde a los 5 minutos. */
-const POLL_DELAYS_MS = [400, 800, 1200, 2000, 3000];
-const POLL_TIMEOUT_MS = 5 * 60 * 1000;
 
 type ItemState = "waiting" | "uploading" | JobStatus | "error";
 
@@ -32,8 +26,6 @@ type Item = {
   warnings?: ImportJob["warnings"];
   possibleDuplicates?: string[];
 };
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function extensionOf(name: string) {
   const dot = name.lastIndexOf(".");
@@ -51,6 +43,17 @@ function precheck(file: File): string | undefined {
 type Outcome = Partial<Item> & { state: ItemState };
 
 /** Sube un archivo y sigue su trabajo hasta un estado final. Nunca lanza: todo error se vuelve un estado. */
+function outcomeOf(job: ImportJob): Outcome {
+  return {
+    state: job.status,
+    activityId: job.activityId,
+    warnings: job.warnings,
+    possibleDuplicates: job.possibleDuplicateActivityIds,
+    errorKey: job.errorCode ?? undefined,
+    detail: job.errorDetail ?? undefined,
+  };
+}
+
 async function importFile(file: File, onUpdate: (patch: Outcome) => void): Promise<Outcome> {
   const fail = (errorKey: string, detail?: string): Outcome => ({ state: "error", errorKey, detail });
   try {
@@ -68,25 +71,8 @@ async function importFile(file: File, onUpdate: (patch: Outcome) => void): Promi
     }
 
     onUpdate({ state: "QUEUED" });
-    const started = Date.now();
-    for (let attempt = 0; Date.now() - started < POLL_TIMEOUT_MS; attempt++) {
-      await sleep(POLL_DELAYS_MS[Math.min(attempt, POLL_DELAYS_MS.length - 1)]);
-      const response = await fetch(`/api/importaciones/${accepted.jobId}`, { cache: "no-store" });
-      if (response.status === 401) return fail("session");
-      if (!response.ok) continue; // un fallo pasajero no cancela el seguimiento
-      const job = (await response.json()) as ImportJob;
-      const patch: Outcome = {
-        state: job.status,
-        activityId: job.activityId,
-        warnings: job.warnings,
-        possibleDuplicates: job.possibleDuplicateActivityIds,
-        errorKey: job.errorCode ?? undefined,
-        detail: job.errorDetail ?? undefined,
-      };
-      if (TERMINAL.includes(job.status)) return patch;
-      onUpdate(patch);
-    }
-    return fail("unavailable");
+    const result = await pollJob(accepted.jobId, (job) => onUpdate(outcomeOf(job)));
+    return result.ok ? outcomeOf(result.job) : fail(result.error);
   } catch {
     return fail("unavailable");
   }
@@ -134,7 +120,9 @@ export function Importer() {
     add(event.dataTransfer.files);
   }
 
-  const finished = items.filter((item) => item.state === "error" || TERMINAL.includes(item.state as JobStatus));
+  const finished = items.filter(
+    (item) => item.state === "error" || TERMINAL_STATUSES.includes(item.state as JobStatus),
+  );
   const busy = finished.length < items.length;
 
   return (

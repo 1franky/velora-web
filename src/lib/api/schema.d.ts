@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@13e47d99aa92a482000d5846c042d72c99180c0e. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@57447fcf2acdd75bb191c73339450ec2ad1d0a67. No editar a mano.
 
 export interface paths {
     "/auth/login": {
@@ -262,6 +262,28 @@ export interface paths {
         };
         /** Vueltas de una actividad */
         get: operations["getActivityLaps"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/activities/{activityId}/possible-duplicates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activityId: string;
+            };
+            cookie?: never;
+        };
+        /**
+         * Actividades que parecen la misma rodada
+         * @description Mismo criterio que la advertencia POSSIBLE_DUPLICATE al importar (ADR-009, nivel 3): inicio a menos de 2 minutos, duración y distancia parecidas y recorridos que se cruzan. Sirve para resolver duplicados después de importar (p. ej. la misma rodada en FIT, GPX y TCX). Solo informa; nunca descarta nada. Lista vacía si no hay.
+         */
+        get: operations["getPossibleDuplicates"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1148,6 +1170,32 @@ export interface operations {
                 content: {
                     "application/json": {
                         items: components["schemas"]["ActivityLap"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getPossibleDuplicates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Posibles duplicados, del más antiguo al más reciente */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["ActivitySummary"][];
                     };
                 };
             };

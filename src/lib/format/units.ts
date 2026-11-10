@@ -109,3 +109,18 @@ export function formatInstantDate(instant: string, timeZone: string): string {
     return calendarDate.format(date);
   }
 }
+
+/** Hora local de un instante (ISO) en la zona indicada, como HH:mm. */
+export function formatInstantTime(instant: string, timeZone: string): string {
+  const date = new Date(instant);
+  if (Number.isNaN(date.getTime())) {
+    return MISSING;
+  }
+  try {
+    return new Intl.DateTimeFormat(LOCALE, { hour: "2-digit", minute: "2-digit", hour12: false, timeZone }).format(
+      date,
+    );
+  } catch {
+    return MISSING;
+  }
+}

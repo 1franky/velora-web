@@ -88,3 +88,52 @@ export async function getLaps(id: string): Promise<Loaded<ActivityLap[]>> {
     return failure(undefined);
   }
 }
+
+export async function getPossibleDuplicates(id: string): Promise<Loaded<ActivitySummary[]>> {
+  try {
+    const { data, response } = await (
+      await api()
+    ).GET("/activities/{activityId}/possible-duplicates", {
+      params: { path: { activityId: id } },
+    });
+    return data ? { ok: true, data: data.items } : failure(response.status);
+  } catch {
+    return failure(undefined);
+  }
+}
+
+export type ActionError = LoadError | "notFound";
+
+/** Borra la actividad, sus datos derivados y su archivo original (irreversible). */
+export async function deleteActivity(id: string): Promise<{ ok: true } | { ok: false; error: ActionError }> {
+  try {
+    const { response } = await (
+      await api()
+    ).DELETE("/activities/{activityId}", {
+      params: { path: { activityId: id } },
+    });
+    if (response.status === 204) return { ok: true };
+    if (response.status === 404) return { ok: false, error: "notFound" };
+    return failure(response.status);
+  } catch {
+    return failure(undefined);
+  }
+}
+
+/** Pide recalcular la actividad desde su original; devuelve el trabajo a seguir. */
+export async function reprocessActivity(
+  id: string,
+): Promise<{ ok: true; jobId: string } | { ok: false; error: ActionError }> {
+  try {
+    const { data, response } = await (
+      await api()
+    ).POST("/activities/{activityId}/reprocess", {
+      params: { path: { activityId: id } },
+    });
+    if (data) return { ok: true, jobId: data.jobId };
+    if (response.status === 404) return { ok: false, error: "notFound" };
+    return failure(response.status);
+  } catch {
+    return failure(undefined);
+  }
+}

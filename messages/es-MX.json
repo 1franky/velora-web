@@ -260,5 +260,72 @@
     "heartRate": "FC media",
     "power": "Potencia media",
     "cadence": "Cadencia media"
+  },
+  "confirm": {
+    "cancel": "Cancelar",
+    "errors": {
+      "session": "Tu sesión terminó. Vuelve a iniciar sesión e inténtalo de nuevo.",
+      "invalid": "La solicitud no es válida. Recarga la página.",
+      "unavailable": "No pudimos conectar con el servicio. Intenta de nuevo en unos momentos.",
+      "notFound": "La actividad ya no existe."
+    }
+  },
+  "activityActions": {
+    "title": "Acciones",
+    "recalculate": "Recalcular métricas",
+    "recalculating": "Recalculando…",
+    "recalculateHint": "Recalcular vuelve a procesar el archivo original con la versión actual de Velora. Conserva el título, la bicicleta y la zona horaria.",
+    "reprocess": {
+      "done": "Listo: las métricas se recalcularon.",
+      "failed": "No se pudo recalcular. El archivo original o la actividad cambiaron; intenta de nuevo.",
+      "session": "Tu sesión terminó. Vuelve a iniciar sesión e inténtalo de nuevo.",
+      "unavailable": "No pudimos conectar con el servicio. Intenta de nuevo en unos momentos."
+    },
+    "delete": "Borrar actividad",
+    "deleteTitle": "¿Borrar «{title}»?",
+    "deleteBody": "Se borran la actividad, sus métricas, su recorrido y el archivo original que importaste.",
+    "deleteIrreversible": "No se puede deshacer. Si la necesitas otra vez tendrás que importar el archivo de nuevo.",
+    "deleteConfirm": "Borrar actividad",
+    "deleting": "Borrando…"
+  },
+  "duplicates": {
+    "title": "{count, plural, one {Parece que esta rodada ya la tienes en otra actividad} other {Parece que esta rodada ya la tienes en otras # actividades}}",
+    "body": "Pasa cuando importas el mismo recorrido en varios formatos (FIT, GPX, TCX). Compáralas y quédate con la más completa.",
+    "compare": "Comparar con «{title}»"
+  },
+  "notices": {
+    "deleted": "Actividad borrada.",
+    "duplicateResolved": "Listo: conservaste esta actividad y borraste la otra."
+  },
+  "compare": {
+    "title": "Comparar actividades",
+    "intro": "Revisa qué trae cada una y quédate con la más completa. La otra se borra con su archivo original.",
+    "caption": "Comparación de las dos actividades, dato por dato",
+    "back": "Volver a «{title}»",
+    "unavailable": "No pudimos cargar las actividades. Intenta de nuevo en unos momentos.",
+    "richer": "Trae más datos",
+    "file": "Archivo original",
+    "start": "Inicio",
+    "distance": "Distancia",
+    "movingTime": "Tiempo en movimiento",
+    "elapsedTime": "Tiempo total",
+    "elevationGain": "Desnivel positivo",
+    "averageSpeed": "Velocidad media",
+    "averageHeartRate": "Frecuencia cardiaca media",
+    "averagePower": "Potencia media",
+    "averageCadence": "Cadencia media",
+    "track": "Recorrido GPS",
+    "series": "Datos registrados",
+    "laps": "Vueltas",
+    "yes": "Sí",
+    "no": "No",
+    "differencesHint": "Los datos en negritas son los que cambian entre una y otra.",
+    "resolveTitle": "¿Con cuál te quedas?",
+    "keep": "Quedarme con «{title}» ({format})",
+    "keepTitle": "¿Quedarte con «{keep}» y borrar «{remove}»?",
+    "keepBody": "Se borra «{remove}» ({format}) con sus métricas, su recorrido y su archivo original. «{keep}» no cambia.",
+    "irreversible": "No se puede deshacer.",
+    "keepConfirm": "Borrar «{title}»",
+    "deleting": "Borrando…"
   }
 }
