@@ -48,3 +48,21 @@ export function readThemePreference(): ThemePreference {
     return "system";
   }
 }
+
+/** Tema que se ve: el elegido en Configuración o, si es "según tu dispositivo", el del sistema. */
+export function resolvedTheme(): "light" | "dark" {
+  const forced = document.documentElement.dataset.theme;
+  if (forced === "light" || forced === "dark") return forced;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+/** Suscripción a cualquier cambio del tema que se ve (elección del usuario o del sistema). */
+export function subscribeResolvedTheme(onChange: () => void) {
+  const media = window.matchMedia("(prefers-color-scheme: dark)");
+  const unsubscribe = subscribeTheme(onChange);
+  media.addEventListener("change", onChange);
+  return () => {
+    unsubscribe();
+    media.removeEventListener("change", onChange);
+  };
+}

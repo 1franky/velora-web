@@ -137,3 +137,16 @@ export async function reprocessActivity(
     return failure(undefined);
   }
 }
+
+export type DashboardSummary = components["schemas"]["DashboardSummary"];
+
+export async function getDashboardSummary(
+  period: "week" | "month" | "year" | "all",
+): Promise<Loaded<DashboardSummary>> {
+  try {
+    const { data, response } = await (await api()).GET("/dashboard/summary", { params: { query: { period } } });
+    return data ? { ok: true, data } : failure(response.status);
+  } catch {
+    return failure(undefined);
+  }
+}
