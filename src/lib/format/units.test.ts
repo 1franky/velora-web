@@ -6,6 +6,7 @@ import {
   formatElevation,
   formatFileSize,
   formatInstantDate,
+  formatInstantTime,
   formatLocalDate,
   formatSpeed,
   formatWeekdayDate,
@@ -61,5 +62,10 @@ describe("formatos es-MX", () => {
   it("muestra la fecha de un instante en la zona de la actividad", () => {
     expect(formatInstantDate("2026-11-10T03:30:00Z", "America/Mexico_City")).toBe("09/11/2026");
     expect(formatInstantDate("no-es-fecha", "America/Mexico_City")).toBe(MISSING);
+  });
+
+  it("muestra la hora local de un instante en 24 horas", () => {
+    expect(formatInstantTime("2026-11-08T14:05:00Z", "America/Mexico_City")).toBe("08:05");
+    expect(formatInstantTime("x", "America/Mexico_City")).toBe(MISSING);
   });
 });

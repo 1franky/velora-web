@@ -35,9 +35,21 @@ export default async function ActivitiesPage({ searchParams }: PageProps<"/activ
 }
 
 async function Results({ searchParams }: { searchParams: PageProps<"/actividades">["searchParams"] }) {
-  const filters = parseFilters(await searchParams);
+  const params = await searchParams;
+  const { aviso, ...rest } = params;
+  const filters = parseFilters(rest);
   const query = toApiQuery(filters);
-  const [t, bikes, page] = await Promise.all([getTranslations("activities"), listBikes(), listActivities(query)]);
+  const [t, tn, bikes, page] = await Promise.all([
+    getTranslations("activities"),
+    getTranslations("notices"),
+    listBikes(),
+    listActivities(query),
+  ]);
+  const notice = aviso === "borrada" && (
+    <p role="status" className="rounded-lg border border-positivo bg-superficie px-4 py-3 font-medium">
+      {tn("deleted")}
+    </p>
+  );
   const filtered = hasFilters(filters);
   // La clave reinicia el formulario y la lista cuando cambian los filtros en la URL.
   const key = JSON.stringify(filters);
@@ -57,20 +69,24 @@ async function Results({ searchParams }: { searchParams: PageProps<"/actividades
 
   if (!filtered && page.data.items.length === 0) {
     return (
-      <section aria-labelledby="sin-actividades" className="flex max-w-2xl flex-col items-start gap-3 py-6">
-        <h2 id="sin-actividades" className="text-2xl font-semibold">
-          {t("empty.title")}
-        </h2>
-        <p className="max-w-prose text-tinta-suave">{t("empty.body")}</p>
-        <Link href="/actividades/importar" className="font-semibold text-acento underline underline-offset-4">
-          {t("empty.action")}
-        </Link>
-      </section>
+      <>
+        {notice}
+        <section aria-labelledby="sin-actividades" className="flex max-w-2xl flex-col items-start gap-3 py-6">
+          <h2 id="sin-actividades" className="text-2xl font-semibold">
+            {t("empty.title")}
+          </h2>
+          <p className="max-w-prose text-tinta-suave">{t("empty.body")}</p>
+          <Link href="/actividades/importar" className="font-semibold text-acento underline underline-offset-4">
+            {t("empty.action")}
+          </Link>
+        </section>
+      </>
     );
   }
 
   return (
     <>
+      {notice}
       <FiltersPanel key={`panel-${key}`} active={countFilters(filters)}>
         <ActivityFiltersForm
           key={`filtros-${key}`}

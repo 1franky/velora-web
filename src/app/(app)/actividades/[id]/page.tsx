@@ -4,7 +4,9 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { ActivityActions } from "@/components/activities/activity-actions";
 import { ActivityCharts } from "@/components/activities/activity-charts";
+import { DuplicatesNotice } from "@/components/activities/duplicates-notice";
 import { ActivityMap } from "@/components/activities/activity-map";
 import { LapsTable } from "@/components/activities/laps-table";
 import { getActivity, getLaps, getStreams, type ActivityDetail } from "@/lib/activities/data";
@@ -29,7 +31,7 @@ export async function generateMetadata({ params }: PageProps<"/actividades/[id]"
   return { title: result?.ok ? result.data.title : (await getTranslations("activities"))("title") };
 }
 
-export default async function ActivityPage({ params }: PageProps<"/actividades/[id]">) {
+export default async function ActivityPage({ params, searchParams }: PageProps<"/actividades/[id]">) {
   const t = await getTranslations("activities.detail");
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10 lg:px-10 lg:py-14">
@@ -41,18 +43,21 @@ export default async function ActivityPage({ params }: PageProps<"/actividades/[
         {t("back")}
       </Link>
       <Suspense fallback={<div aria-hidden className="h-64 animate-pulse rounded-lg bg-superficie-hundida" />}>
-        <Detail params={params} />
+        <Detail params={params} searchParams={searchParams} />
       </Suspense>
     </div>
   );
 }
 
-async function Detail({ params }: { params: PageProps<"/actividades/[id]">["params"] }) {
-  const { id } = await params;
+type DetailProps = Pick<PageProps<"/actividades/[id]">, "params" | "searchParams">;
+
+async function Detail({ params, searchParams }: DetailProps) {
+  const [{ id }, { aviso }] = await Promise.all([params, searchParams]);
   if (!UUID.test(id)) notFound();
-  const [result, t, hasBasemap] = await Promise.all([
+  const [result, t, tn, hasBasemap] = await Promise.all([
     getActivity(id),
     getTranslations("activities"),
+    getTranslations("notices"),
     basemapAvailable(),
   ]);
   if (!result.ok) {
@@ -72,6 +77,14 @@ async function Detail({ params }: { params: PageProps<"/actividades/[id]">["para
         </p>
         <h1 className="text-4xl font-bold tracking-tight">{activity.title}</h1>
       </header>
+      {aviso === "duplicado-resuelto" && (
+        <p role="status" className="rounded-lg border border-positivo bg-superficie px-4 py-3 font-medium">
+          {tn("duplicateResolved")}
+        </p>
+      )}
+      <Suspense>
+        <DuplicatesNotice activityId={activity.id} />
+      </Suspense>
       {activity.hasTrack && <ActivityMap activityId={activity.id} hasBasemap={hasBasemap} />}
       <Metrics activity={activity} />
       {activity.streamTypes.length > 0 && (
@@ -91,6 +104,7 @@ async function Detail({ params }: { params: PageProps<"/actividades/[id]">["para
           date: formatInstantDate(activity.originalFile.importedAt, activity.timeZone),
         })}
       </p>
+      <ActivityActions activityId={activity.id} title={activity.title} />
     </>
   );
 }

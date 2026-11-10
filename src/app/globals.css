@@ -18,6 +18,7 @@
   --grafica: #c76a0e; /* trazos de gráficas: validado (banda de luminosidad, croma, ≥ 3:1) */
   --positivo: #2f6b4f;
   --negativo: #a3392a;
+  --sobre-negativo: #ffffff; /* texto sobre botones destructivos (6.6:1) */
   color-scheme: light;
 }
 
@@ -35,6 +36,7 @@
     --grafica: #d07c26; /* el acento oscuro (#f2a03d) es demasiado claro para un trazo */
     --positivo: #6fc59a;
     --negativo: #f08a78;
+    --sobre-negativo: #121a24;
     color-scheme: dark;
   }
 }
@@ -52,6 +54,7 @@
   --grafica: #d07c26;
   --positivo: #6fc59a;
   --negativo: #f08a78;
+  --sobre-negativo: #121a24;
   color-scheme: dark;
 }
 
@@ -67,6 +70,7 @@
   --color-acento-texto-sobre: var(--acento-texto-sobre);
   --color-positivo: var(--positivo);
   --color-negativo: var(--negativo);
+  --color-sobre-negativo: var(--sobre-negativo);
   --font-sans: var(--font-barlow), system-ui, sans-serif;
   --font-display: var(--font-barlow-semi), var(--font-barlow), system-ui, sans-serif;
 }
