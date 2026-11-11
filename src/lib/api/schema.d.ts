@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@54c6209cab9507593cdee3d18f3cb062e209fb32. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@29088b6d043e20e13778b02db61ea1b28a46439e. No editar a mano.
 
 export interface paths {
     "/auth/login": {
@@ -470,6 +470,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/analytics/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Récords personales con reglas explícitas
+         * @description Mayor distancia, desnivel y tiempo en movimiento, y velocidad media más alta (solo rodadas de al menos `minSpeedDistanceMeters` y `minSpeedMovingSeconds`), más el día local con más kilómetros (ADR-020). Una sola rodada de cada grupo de posibles duplicados; solo exterior salvo `includeIndoor=true`. En empate gana la primera en lograrlo. `source` dice si el valor vino del dispositivo o lo calculó Velora. La velocidad máxima no es récord: un pico del GPS la falsea.
+         */
+        get: operations["getRecords"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/analytics/eddington": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Número de Eddington, de toda la historia y del año en curso
+         * @description Mayor E tal que hay al menos E días locales con al menos E km (§6, ADR-020), sumando las rodadas de cada día. Una sola rodada de cada grupo de posibles duplicados; solo exterior salvo `includeIndoor=true`. `missingForNext` son los días de E + 1 km o más que faltan para subir a E + 1.
+         */
+        get: operations["getEddington"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -881,6 +921,47 @@ export interface components {
             distanceMeters: number;
             movingTimeSeconds: number;
             elevationGainMeters: number;
+        };
+        Records: {
+            /** @example records/1 */
+            algorithmVersion: string;
+            includeIndoor: boolean;
+            minSpeedDistanceMeters: number;
+            minSpeedMovingSeconds: number;
+            records: {
+                /** @enum {string} */
+                kind: "longest_distance" | "most_elevation" | "longest_moving_time" | "fastest_average_speed";
+                /** @description Metros, metros, segundos o m/s según `kind`. */
+                value: number;
+                /** Format: uuid */
+                activityId: string;
+                title: string;
+                /** Format: date */
+                localStartDate: string;
+                source: components["schemas"]["MetricSource"] | null;
+            }[];
+            biggestDay: null | {
+                /** Format: date */
+                date: string;
+                distanceMeters: number;
+                activityCount: number;
+            };
+        };
+        EddingtonValue: {
+            number: number;
+            /** @description Días que ya tienen E + 1 km o más. */
+            daysForNext: number;
+            missingForNext: number;
+        };
+        Eddington: {
+            /** @example eddington/1 */
+            algorithmVersion: string;
+            includeIndoor: boolean;
+            /** @description Año en curso en la zona horaria del usuario. */
+            year: number;
+            daysWithRides: number;
+            overall: components["schemas"]["EddingtonValue"];
+            thisYear: components["schemas"]["EddingtonValue"];
         };
     };
     responses: {
@@ -1708,6 +1789,56 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Timeseries"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getRecords: {
+        parameters: {
+            query?: {
+                includeIndoor?: boolean;
+                subType?: components["schemas"]["ActivitySubType"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Récords (vacío si no hay rodadas) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Records"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getEddington: {
+        parameters: {
+            query?: {
+                includeIndoor?: boolean;
+                subType?: components["schemas"]["ActivitySubType"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eddington */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Eddington"];
                 };
             };
             400: components["responses"]["BadRequest"];

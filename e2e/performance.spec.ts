@@ -65,6 +65,29 @@ test("avisa cuando hay duplicados contados una sola vez", async ({ page, request
   await expect(page.getByRole("link", { name: "Resolver en Actividades" })).toHaveAttribute("href", "/actividades");
 });
 
+test("muestra el Eddington y los récords con su rodada y sus reglas", async ({ page }) => {
+  const eddington = page.getByRole("region", { name: "Número de Eddington" });
+  await expect(eddington.getByRole("term").filter({ hasText: "De siempre" }).locator("..")).toContainText(/\d+/);
+  await expect(eddington).toContainText(/Te faltan? \d+ días? de \d+ km o más para llegar a \d+\./);
+
+  const records = page.getByRole("region", { name: "Récords" });
+  const longest = records.getByRole("listitem").filter({ hasText: "Rodada más larga" });
+  await expect(longest).toContainText("km");
+  await expect(longest).toContainText("Dato del dispositivo");
+  await longest.getByRole("link").click();
+  await expect(page).toHaveURL(/\/actividades\/a0000000-/);
+});
+
+test("los récords siguen el tipo y el rodillo, no el periodo", async ({ page }) => {
+  await page.getByLabel("Agrupar por").selectOption({ label: "Año" });
+  await page.getByLabel("Tipo").selectOption({ label: "Montaña" });
+  await page.getByRole("button", { name: "Aplicar" }).click();
+  await expect(page).toHaveURL(/tipo=MOUNTAIN_BIKE/);
+  await expect(page.getByRole("region", { name: "Récords" })).toBeVisible();
+  const stats = (await (await page.request.get(`${API}/__stats`)).json()) as { recordsQueries: string[] };
+  expect(stats.recordsQueries.at(-1)).toBe("includeIndoor=false&subType=MOUNTAIN_BIKE");
+});
+
 test("Rendimiento no tiene violaciones de accesibilidad WCAG A/AA", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.getByRole("figure", { name: "Distancia (km)" })).toBeVisible();

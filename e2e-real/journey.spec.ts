@@ -222,6 +222,14 @@ test("Rendimiento suma la rodada de exterior y no cuenta el duplicado borrado", 
   const rodadas = page.getByRole("term").filter({ hasText: "Rodadas" }).locator("..");
   await expect(rodadas.locator("dd")).toHaveText("1");
   await expect(page.getByRole("figure", { name: "Distancia (km)" })).toBeVisible();
+  // Un solo día con unos kilómetros: Eddington 1, y la rodada es su propio récord.
+  const eddington = page.getByRole("region", { name: "Número de Eddington" });
+  await expect(eddington.getByRole("term").filter({ hasText: "De siempre" }).locator("..")).toContainText("1");
+  const longest = page
+    .getByRole("region", { name: "Récords" })
+    .getByRole("listitem")
+    .filter({ hasText: "Rodada más larga" });
+  await expect(longest.getByRole("link", { name: "Rodada de prueba editada" })).toBeVisible();
   await expectNoViolations(page);
 });
 
