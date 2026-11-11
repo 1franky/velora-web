@@ -1,7 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createBike, createDevice, deleteBike, updateBike, updateTimeZone, type WriteResult } from "@/lib/catalog/data";
+import {
+  createBike,
+  createDevice,
+  deleteBike,
+  updateBike,
+  updateTimeZone,
+  updateTrackPrivacy,
+  type WriteResult,
+} from "@/lib/catalog/data";
 import type { FormState } from "@/lib/catalog/form-state";
 import { isValidTimeZone, parseBikeForm, parseDeviceForm } from "@/lib/catalog/forms";
 
@@ -19,6 +27,16 @@ export async function saveTimeZoneAction(_previous: FormState, form: FormData): 
   const timeZone = String(form.get("timeZone") ?? "");
   if (!isValidTimeZone(timeZone)) return { status: "error", fields: { timeZone: "invalid" } };
   return settle(await updateTimeZone(timeZone));
+}
+
+/** Metros que se ocultan al inicio y al final de cada recorrido (ADR-016); 0 la desactiva. */
+const PRIVACY_STEPS = [0, 200, 300, 500, 1000] as const;
+
+export async function savePrivacyAction(_previous: FormState, form: FormData): Promise<FormState> {
+  const meters = Number(form.get("trackPrivacyMeters"));
+  const step = PRIVACY_STEPS.find((value) => value === meters);
+  if (step === undefined) return { status: "error", fields: { trackPrivacyMeters: "invalid" } };
+  return settle(await updateTrackPrivacy(step));
 }
 
 export async function createBikeAction(_previous: FormState, form: FormData): Promise<FormState> {

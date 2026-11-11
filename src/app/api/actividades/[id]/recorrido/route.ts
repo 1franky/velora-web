@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { api } from "@/lib/auth/session";
+import { getMe } from "@/lib/catalog/data";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PRIVATE = { "Cache-Control": "private, no-store" };
@@ -20,9 +21,14 @@ export async function GET(request: NextRequest, { params }: RouteContext<"/api/a
     if (data) {
       return NextResponse.json(data, { headers: { ...PRIVATE, "Content-Type": "application/geo+json" } });
     }
-    const status = response.status === 401 || response.status === 404 ? response.status : 502;
+    if (response.status === 404) {
+      // Con privacidad activa, un 404 de una actividad con GPS significa que todo el recorrido queda oculto.
+      const privacy = (await getMe())?.preferences.trackPrivacyMeters ?? 0;
+      return NextResponse.json({ error: privacy > 0 ? "hidden" : "notFound" }, { status: 404, headers: PRIVATE });
+    }
+    const status = response.status === 401 ? 401 : 502;
     return NextResponse.json(
-      { error: status === 401 ? "session" : status === 404 ? "notFound" : "unavailable" },
+      { error: status === 401 ? "session" : "unavailable" },
       {
         status,
         headers: PRIVATE,

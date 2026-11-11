@@ -43,6 +43,11 @@ export async function updateTimeZone(timeZone: string) {
   return write(() => client.PATCH("/me/preferences", { body: { timeZone } }));
 }
 
+export async function updateTrackPrivacy(trackPrivacyMeters: Preferences["trackPrivacyMeters"]) {
+  const client = await api();
+  return write(() => client.PATCH("/me/preferences", { body: { trackPrivacyMeters } }));
+}
+
 export async function listAllBikes(): Promise<Bike[] | null> {
   try {
     const { data } = await (await api()).GET("/bikes");

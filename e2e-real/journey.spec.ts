@@ -148,6 +148,17 @@ test("configura una bicicleta y la asigna a la rodada", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Rodada de prueba editada" })).toBeVisible();
 });
 
+test("la privacidad recorta el inicio y el fin en la API real", async ({ page }) => {
+  await login(page, "/configuracion");
+  await page.getByRole("combobox", { name: "Ocultar al inicio y al final" }).selectOption({ label: "200 m" });
+  await page.getByRole("button", { name: "Guardar privacidad" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Privacidad guardada." })).toBeVisible();
+
+  await page.goto(tcxActivity);
+  await expect(page.locator('[data-estado="listo"]')).toBeAttached({ timeout: 30_000 });
+  await expect(page.getByText(/El inicio y el fin de este recorrido están ocultos/)).toBeVisible();
+});
+
 test("recalcula las métricas desde el archivo original", async ({ page }) => {
   await login(page, tcxActivity);
   await page.getByRole("button", { name: "Recalcular métricas" }).click();
