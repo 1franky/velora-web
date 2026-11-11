@@ -148,6 +148,18 @@ test("configura una bicicleta y la asigna a la rodada", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Rodada de prueba editada" })).toBeVisible();
 });
 
+test("el Explorador dibuja la rodada con teselas de la API real", async ({ page }) => {
+  const drawn = page.waitForResponse(
+    (response) => response.url().includes("/api/mapa-de-calor/") && response.status() === 200,
+  );
+  await login(page, "/explorador");
+  const tile = await drawn;
+  expect(tile.headers()["content-type"]).toBe("application/vnd.mapbox-vector-tile");
+  expect((await tile.body()).length).toBeGreaterThan(0);
+  await expect(page.locator('[data-estado="listo"]')).toBeAttached({ timeout: 30_000 });
+  await expectNoViolations(page);
+});
+
 test("la privacidad recorta el inicio y el fin en la API real", async ({ page }) => {
   await login(page, "/configuracion");
   await page.getByRole("combobox", { name: "Ocultar al inicio y al final" }).selectOption({ label: "200 m" });

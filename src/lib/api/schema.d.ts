@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@7499dbfc27525d0f187ba05b67ded4279a2253b5. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@fd9ef5911116e7636cbace070ee679d46ef04b11. No editar a mano.
 
 export interface paths {
     "/auth/login": {
@@ -353,36 +353,18 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/geo/heatmap": {
+    "/geo/heatmap/{z}/{x}/{y}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Obtener heatmap del usuario */
-        get: {
-            parameters: {
-                query?: {
-                    from?: string;
-                    to?: string;
-                    bbox?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Features geoespaciales del viewport */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        /**
+         * Tesela vectorial del mapa de calor personal
+         * @description Tesela Mapbox Vector Tile (XYZ, Web Mercator, extent 4096) con una capa `recorridos`: una línea por actividad con recorrido, sin propiedades. El cliente las dibuja translúcidas y la intensidad sale de cuántas se enciman. Los recorridos llegan recortados según la privacidad de inicio y fin del usuario (igual que en `/activities/{activityId}/track`) y simplificados a medio píxel de la tesela. Una tesela sin recorridos responde 204. Respuesta privada con ETag: con `If-None-Match` y sin cambios, 304.
+         */
+        get: operations["getHeatmapTile"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1344,6 +1326,57 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["DashboardSummary"];
                 };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getHeatmapTile: {
+        parameters: {
+            query?: {
+                /** @description Fecha deportiva local inicial (incluida). */
+                from?: string;
+                /** @description Fecha deportiva local final (incluida). */
+                to?: string;
+                bikeId?: string;
+                subType?: components["schemas"]["ActivitySubType"];
+            };
+            header?: never;
+            path: {
+                /** @description Zoom; más allá de 16 el cliente amplía la tesela del 16. */
+                z: number;
+                /** @description Columna, de 0 a 2^z - 1. */
+                x: number;
+                /** @description Fila, de 0 a 2^z - 1 (origen arriba a la izquierda). */
+                y: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tesela con al menos un recorrido */
+            200: {
+                headers: {
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.mapbox-vector-tile": string;
+                };
+            };
+            /** @description No hay recorridos en esta tesela */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La tesela no cambió desde el ETag enviado en `If-None-Match` */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];

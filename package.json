@@ -7,7 +7,7 @@
     "node": ">=26 <27"
   },
   "velora": {
-    "contractRef": "7499dbfc27525d0f187ba05b67ded4279a2253b5"
+    "contractRef": "fd9ef5911116e7636cbace070ee679d46ef04b11"
   },
   "scripts": {
     "dev": "node scripts/vendor-maplibre.mjs && next dev",
