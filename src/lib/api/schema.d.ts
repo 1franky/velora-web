@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@e5bc70e1bed1b400420f582e0972d84e2191ae2c. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@54c6209cab9507593cdee3d18f3cb062e209fb32. No editar a mano.
 
 export interface paths {
     "/auth/login": {
