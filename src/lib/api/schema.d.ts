@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@406fc6224bc85895ffb89108424acb0e84680aee. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@93cfc6b0adb8da71eae3ac675a1b3e5cd3e0062b. No editar a mano.
 
 export interface paths {
     "/auth/login": {
@@ -373,6 +373,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/geo/exploration/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resumen de exploración (celdas H3 y cuadrícula de 1 km)
+         * @description Celdas visitadas en dos sistemas que no se comparan entre sí (ADR-018): H3 resolución 9 (área aproximada) y cuadrícula métrica de 1 km en EPSG:6372 (solo México; superficie constante). Se calculan en segundo plano tras importar o reprocesar, al cambiar la privacidad y al arrancar; `pendingActivities` dice cuántas faltan. Las celdas salen del recorrido ya recortado por la privacidad de inicio y fin.
+         */
+        get: operations["getExplorationSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/geo/exploration/cells": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Celdas visitadas dentro de un recuadro, para dibujarlas */
+        get: operations["listExplorationCells"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/geo/exploration/largest-square": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mayor cuadrado de celdas de 1 km visitadas
+         * @description Cuadrícula de 1 km alineada al origen de EPSG:6372, conectividad por lados, una celda faltante rompe el cuadrado. `size` es el lado en celdas (0 si aún no hay celdas).
+         */
+        get: operations["getLargestSquare"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -672,6 +729,53 @@ export interface components {
             }[];
             /** @description Actividades parecidas (heurística o clave de origen débil); no se descartó nada. */
             possibleDuplicateActivityIds: string[];
+        };
+        ExplorationSummary: {
+            /** @example exploration-cells/1 */
+            algorithmVersion: string;
+            processedActivities: number;
+            /** @description Actividades con recorrido cuyas celdas aún se están calculando. */
+            pendingActivities: number;
+            h3: {
+                resolution: number;
+                cellCount: number;
+                /** @description Celdas × área promedio de un hexágono de esta resolución. */
+                approxAreaKm2: number;
+            };
+            metricGrid: {
+                cellSizeMeters: number;
+                cellCount: number;
+                areaKm2: number;
+            };
+        };
+        ExplorationCells: {
+            /** @constant */
+            type: "FeatureCollection";
+            /** @enum {string} */
+            grid: "H3" | "MX1KM";
+            truncated: boolean;
+            features: {
+                /** @constant */
+                type: "Feature";
+                geometry: {
+                    /** @constant */
+                    type: "Polygon";
+                    coordinates: number[][][];
+                };
+                properties: {
+                    activityCount: number;
+                };
+            }[];
+        };
+        LargestSquare: {
+            /** @example largest-square/1 */
+            algorithmVersion: string;
+            cellSizeMeters: number;
+            /** @description Lado del cuadrado en celdas. */
+            size: number;
+            sideKm: number;
+            /** @description oeste,sur,este,norte del cuadrado en grados; null si no hay celdas. */
+            bbox: number[] | null;
         };
     };
     responses: {
@@ -1379,6 +1483,74 @@ export interface operations {
                 content?: never;
             };
             400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getExplorationSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Resumen */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplorationSummary"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    listExplorationCells: {
+        parameters: {
+            query: {
+                grid?: "H3" | "MX1KM";
+                /** @description oeste,sur,este,norte en grados (WGS 84). */
+                bbox: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Hasta 5 000 celdas, primero las más recorridas; `truncated` indica que hay más y conviene acercarse. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/geo+json": components["schemas"]["ExplorationCells"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getLargestSquare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mayor cuadrado */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LargestSquare"];
+                };
+            };
             401: components["responses"]["Unauthorized"];
         };
     };

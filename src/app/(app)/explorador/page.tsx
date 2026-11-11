@@ -4,11 +4,13 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { ActivityFiltersForm } from "@/components/activities/activity-filters";
 import { FiltersPanel } from "@/components/activities/filters-panel";
-import { HeatmapMap } from "@/components/explorer/heatmap-map";
+import { ExplorationStats } from "@/components/explorer/exploration-stats";
+import { ExplorerMap } from "@/components/explorer/explorer-map";
 import { listActivities, listBikes } from "@/lib/activities/data";
 import { countFilters, hasFilters, parseFilters, toApiQuery } from "@/lib/activities/filters";
 import { basemapAvailable } from "@/lib/basemap/available";
 import { getMe } from "@/lib/catalog/data";
+import { getExplorationSummary, getLargestSquare } from "@/lib/explorer/data";
 import { heatmapQuery } from "@/lib/explorer/heatmap";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -33,13 +35,15 @@ export default async function ExplorerPage({ searchParams }: PageProps<"/explora
 async function Explorer({ searchParams }: { searchParams: PageProps<"/explorador">["searchParams"] }) {
   // Las distancias no aplican al mapa de calor: se ignoran si llegan en la URL.
   const filters = { ...parseFilters(await searchParams), minKm: undefined, maxKm: undefined };
-  const [t, ta, bikes, page, me, hasBasemap] = await Promise.all([
+  const [t, ta, bikes, page, me, hasBasemap, summary, square] = await Promise.all([
     getTranslations("explorer"),
     getTranslations("activities"),
     listBikes(),
     listActivities(toApiQuery(filters)),
     getMe(),
     basemapAvailable(),
+    getExplorationSummary(),
+    getLargestSquare(),
   ]);
 
   if (!page.ok) {
@@ -91,7 +95,13 @@ async function Explorer({ searchParams }: { searchParams: PageProps<"/explorador
           {filtered ? t("noMatches") : t("noGps")}
         </p>
       )}
-      <HeatmapMap query={heatmapQuery(filters)} hasBasemap={hasBasemap} focusActivityId={focus} />
+      <ExplorerMap
+        query={heatmapQuery(filters)}
+        hasBasemap={hasBasemap}
+        focusActivityId={focus}
+        largestSquare={square?.bbox ? (square.bbox as [number, number, number, number]) : null}
+      />
+      {summary && <ExplorationStats summary={summary} square={square} />}
       <p className="text-sm text-tinta-suave">
         {privacy > 0 ? t("privacyOn") : t("privacyOff")}{" "}
         <Link href="/configuracion#privacidad" className="font-medium text-acento underline underline-offset-4">

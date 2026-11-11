@@ -160,6 +160,27 @@ test("el Explorador dibuja la rodada con teselas de la API real", async ({ page 
   await expectNoViolations(page);
 });
 
+test("las celdas de exploración se calculan en segundo plano", async ({ page }) => {
+  await login(page, "/explorador");
+  const squares = page
+    .getByRole("region", { name: "Territorio explorado" })
+    .getByRole("term")
+    .filter({ hasText: "Cuadros de 1 km" })
+    .locator("..");
+  // ~7.5 km en diagonal: varios cuadros. El cálculo es asíncrono; se recarga hasta verlo.
+  await expect(async () => {
+    await page.reload();
+    await expect(squares.locator("dd").first()).not.toHaveText("0", { timeout: 1_000 });
+  }).toPass({ timeout: 30_000 });
+  await expect(page.getByText("Incluye todas tus rodadas.")).toBeVisible();
+
+  await expect(page.locator('[data-estado="listo"]')).toBeAttached({ timeout: 30_000 });
+  const cells = page.waitForResponse((response) => response.url().includes("/api/exploracion/celdas"));
+  await page.getByRole("radio", { name: "Cuadros de 1 km" }).check();
+  const body = (await (await cells).json()) as { features: unknown[] };
+  expect(body.features.length).toBeGreaterThan(0);
+});
+
 test("la privacidad recorta el inicio y el fin en la API real", async ({ page }) => {
   await login(page, "/configuracion");
   await page.getByRole("combobox", { name: "Ocultar al inicio y al final" }).selectOption({ label: "200 m" });

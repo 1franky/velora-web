@@ -65,6 +65,50 @@ test("avisa cuando la privacidad oculta inicios y finales", async ({ page }) => 
   await expect(page.getByText("Los inicios y finales de cada rodada están ocultos por tu privacidad.")).toBeVisible();
 });
 
+test("resume el territorio explorado y el mayor cuadrado", async ({ page }) => {
+  const stats = page.getByRole("region", { name: "Territorio explorado" });
+  await expect(stats.getByRole("term").filter({ hasText: "Cuadros de 1 km" }).locator("..")).toContainText("87");
+  await expect(stats.getByRole("term").filter({ hasText: "Mayor cuadrado" }).locator("..")).toContainText("3 × 3 km");
+  await expect(stats.getByRole("term").filter({ hasText: "Hexágonos" }).locator("..")).toContainText("1,234");
+  await expect(stats).toContainText("Incluye todas tus rodadas.");
+});
+
+test("avisa mientras se calculan las celdas", async ({ page, request }) => {
+  await request.post(`${API}/__exploracion-pendiente`);
+  await page.reload();
+  await expect(page.getByText("Calculando las celdas de 3 rodadas…")).toBeVisible();
+});
+
+test("muestra los cuadros de 1 km y lleva al mayor cuadrado", async ({ page }) => {
+  await mapReady(page);
+  const cells = page.waitForResponse((response) => response.url().includes("/api/exploracion/celdas"));
+  await page.getByRole("button", { name: "Ver mi mayor cuadrado" }).click();
+  await expect(page.getByRole("radio", { name: "Cuadros de 1 km" })).toBeChecked();
+  const response = await cells;
+  expect(response.status()).toBe(200);
+  expect(response.url()).toContain("grid=MX1KM");
+  await expect(page.getByRole("status").filter({ hasText: "Las celdas incluyen todas tus rodadas" })).toBeVisible();
+
+  await page.getByRole("radio", { name: "Hexágonos" }).check();
+  // Los hexágonos piden más zoom; el mayor cuadrado deja el mapa cerca, así que se piden.
+  await expect
+    .poll(
+      async () => ((await (await page.request.get(`${API}/__stats`)).json()) as { cellQueries: string[] }).cellQueries,
+    )
+    .toContainEqual(expect.stringContaining("grid=H3"));
+});
+
+test("pide acercarse para ver celdas desde muy lejos", async ({ page }) => {
+  await mapReady(page);
+  await page.getByRole("button", { name: "Alejar" }).click();
+  await page.getByRole("button", { name: "Alejar" }).click();
+  await page.getByRole("button", { name: "Alejar" }).click();
+  await page.getByRole("button", { name: "Alejar" }).click();
+  await page.getByRole("button", { name: "Alejar" }).click();
+  await page.getByRole("radio", { name: "Hexágonos" }).check();
+  await expect(page.getByRole("status").filter({ hasText: "Acércate para ver las celdas." })).toBeVisible();
+});
+
 test("el Explorador no tiene violaciones de accesibilidad WCAG A/AA", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await mapReady(page);
