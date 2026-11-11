@@ -227,6 +227,7 @@ function reset() {
     heatmapQueries: [],
     cellQueries: [],
     timeseriesQueries: [],
+    recordsQueries: [],
     duplicatesExcluded: 0,
     explorationPending: 0,
   };
@@ -378,6 +379,7 @@ createServer(async (req, res) => {
       heatmapQueries: state.heatmapQueries,
       cellQueries: state.cellQueries,
       timeseriesQueries: state.timeseriesQueries,
+      recordsQueries: state.recordsQueries,
     });
   }
 
@@ -613,6 +615,71 @@ createServer(async (req, res) => {
       distanceSources: { deviceReported: totals.activityCount, derived: 0 },
       totals,
       buckets,
+    });
+  }
+  // Récords y Eddington (ADR-020): calculados sobre las rodadas sintéticas con las mismas reglas que la API real.
+  const counted = (q) =>
+    state.activities.filter(
+      (a) =>
+        (q.get("includeIndoor") === "true" || a.subType !== "INDOOR") &&
+        (!q.get("subType") || a.subType === q.get("subType")),
+    );
+  if (route === "GET /api/v1/analytics/records") {
+    state.recordsQueries.push(url.searchParams.toString());
+    const rides = counted(url.searchParams);
+    const best = (kind, value, ok = () => true) => {
+      const winner = rides
+        .filter((a) => value(a) != null && value(a) > 0 && ok(a))
+        .sort((a, b) => value(b) - value(a))[0];
+      return (
+        winner && {
+          kind,
+          value: value(winner),
+          activityId: winner.id,
+          title: winner.title,
+          localStartDate: winner.localStartDate,
+          source: "DEVICE_REPORTED",
+        }
+      );
+    };
+    const records = [
+      best("longest_distance", (a) => a.distanceMeters),
+      best("most_elevation", (a) => a.elevationGainMeters),
+      best("longest_moving_time", (a) => a.movingTimeSeconds),
+      best(
+        "fastest_average_speed",
+        (a) => a.averageSpeedMps,
+        (a) => a.distanceMeters >= 10_000 && a.movingTimeSeconds >= 1_200,
+      ),
+    ].filter(Boolean);
+    const top = rides.filter((a) => a.distanceMeters).sort((a, b) => b.distanceMeters - a.distanceMeters)[0];
+    return send(res, 200, {
+      algorithmVersion: "records/1",
+      includeIndoor: url.searchParams.get("includeIndoor") === "true",
+      minSpeedDistanceMeters: 10_000,
+      minSpeedMovingSeconds: 1_200,
+      records,
+      biggestDay: top ? { date: top.localStartDate, distanceMeters: top.distanceMeters, activityCount: 1 } : null,
+    });
+  }
+  if (route === "GET /api/v1/analytics/eddington") {
+    const days = counted(url.searchParams)
+      .map((a) => (a.distanceMeters ?? 0) / 1000)
+      .filter((km) => km > 0)
+      .sort((a, b) => b - a);
+    const value = (list) => {
+      let e = 0;
+      while (e < list.length && list[e] >= e + 1) e++;
+      const reached = list.filter((km) => km >= e + 1).length;
+      return { number: e, daysForNext: reached, missingForNext: e + 1 - reached };
+    };
+    return send(res, 200, {
+      algorithmVersion: "eddington/1",
+      includeIndoor: url.searchParams.get("includeIndoor") === "true",
+      year: 2026,
+      daysWithRides: days.length,
+      overall: value(days),
+      thisYear: value(days),
     });
   }
   // Caminos nuevos (ADR-019): la más antigua es la primera; el resto tiene un tramo nuevo sintético.

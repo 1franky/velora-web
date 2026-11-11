@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Suspense } from "react";
+import { RecordsSection } from "@/components/performance/records-section";
 import { TrendsView } from "@/components/performance/trends-view";
 import { SUB_TYPES } from "@/lib/activities/filters";
 import { listBikes } from "@/lib/activities/data";
 import { formatDistance, formatDuration, formatElevation } from "@/lib/format/units";
-import { getTimeseries } from "@/lib/performance/data";
+import { getEddington, getRecords, getTimeseries } from "@/lib/performance/data";
 import {
   GROUPINGS,
   longLabel,
@@ -39,11 +40,15 @@ const field = "rounded-md border border-linea bg-superficie px-3 py-2 text-base"
 async function Trends({ searchParams }: { searchParams: PageProps<"/rendimiento">["searchParams"] }) {
   const options = parsePerformance(await searchParams);
   const query = toTimeseriesQuery(options);
-  const [t, ta, bikes, result] = await Promise.all([
+  // Récords y Eddington usan rodillo y tipo; no dependen del periodo ni de la bicicleta.
+  const filters = { includeIndoor: query.includeIndoor, subType: query.subType };
+  const [t, ta, bikes, result, records, eddington] = await Promise.all([
     getTranslations("performance"),
     getTranslations("activities"),
     listBikes(),
     getTimeseries(query),
+    getRecords(filters),
+    getEddington(filters),
   ]);
   const key = JSON.stringify(options);
 
@@ -132,6 +137,7 @@ async function Trends({ searchParams }: { searchParams: PageProps<"/rendimiento"
               </table>
             </div>
           </details>
+          <RecordsSection records={records} eddington={eddington} />
         </>
       )}
     </>

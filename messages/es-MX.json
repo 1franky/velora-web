@@ -577,6 +577,30 @@
       "toggle": "Ver los datos en una tabla",
       "caption": "Totales por periodo, del más reciente al más antiguo",
       "period": "Periodo"
+    },
+    "records": {
+      "title": "Récords",
+      "empty": "Aún no hay rodadas que cumplan estas reglas.",
+      "kinds": {
+        "longest_distance": "Rodada más larga",
+        "most_elevation": "Más desnivel positivo",
+        "longest_moving_time": "Más tiempo en movimiento",
+        "fastest_average_speed": "Velocidad media más alta"
+      },
+      "sources": {
+        "DEVICE_REPORTED": "Dato del dispositivo",
+        "DERIVED": "Calculado por Velora"
+      },
+      "biggestDay": "Mejor día",
+      "biggestDayRides": "{count, plural, one {# rodada} other {# rodadas sumadas}}",
+      "rules": "La velocidad media solo cuenta en rodadas de al menos {km} km y {minutes} min en movimiento. La velocidad máxima no es récord: un pico del GPS la falsea. Récords y Eddington siguen las opciones de tipo y rodillo, no el periodo ni la bicicleta.",
+      "eddington": {
+        "title": "Número de Eddington",
+        "overall": "De siempre",
+        "thisYear": "En {year}",
+        "next": "{missing, plural, one {Te falta # día} other {Te faltan # días}} de {km} km o más para llegar a {km}.",
+        "explain": "Un Eddington de {number} significa que has rodado al menos {number} km en {number} días distintos. Cuenta por día: se suman las rodadas del mismo día."
+      }
     }
   }
 }
