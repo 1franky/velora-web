@@ -617,6 +617,48 @@ createServer(async (req, res) => {
       buckets,
     });
   }
+  // Subidas (climbs/1): una subida sintética y su distribución de pendientes en las rodadas con altitud.
+  const climbsMatch = /^GET \/api\/v1\/activities\/([\w-]+)\/climbs$/.exec(route);
+  if (climbsMatch) {
+    const found = state.activities.find((a) => a.id === climbsMatch[1]);
+    if (!found) return send(res, 404, { title: "No encontrado", status: 404 });
+    const available = found.subType !== "INDOOR";
+    const bins = [
+      [null, -8],
+      [-8, -4],
+      [-4, -1],
+      [-1, 1],
+      [1, 4],
+      [4, 8],
+      [8, null],
+    ];
+    return send(res, 200, {
+      activityId: found.id,
+      algorithmVersion: "climbs/1",
+      available,
+      climbs: available
+        ? [
+            {
+              startDistanceMeters: 3_200,
+              endDistanceMeters: 5_600,
+              lengthMeters: 2_400,
+              startAltitudeMeters: 2_250,
+              endAltitudeMeters: 2_394,
+              elevationGainMeters: 144,
+              averageGradePercent: 6,
+              maxGradePercent: 9.4,
+            },
+          ]
+        : [],
+      gradeDistribution: available
+        ? bins.map(([fromPercent, toPercent], i) => ({
+            fromPercent,
+            toPercent,
+            distanceMeters: [400, 1_200, 3_000, 9_000, 4_000, 2_000, 400][i],
+          }))
+        : [],
+    });
+  }
   // Récords y Eddington (ADR-020): calculados sobre las rodadas sintéticas con las mismas reglas que la API real.
   const counted = (q) =>
     state.activities.filter(

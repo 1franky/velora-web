@@ -602,5 +602,27 @@
         "explain": "Un Eddington de {number} significa que has rodado al menos {number} km en {number} días distintos. Cuenta por día: se suman las rodadas del mismo día."
       }
     }
+  },
+  "climbs": {
+    "title": "Subidas",
+    "none": "Esta rodada no tiene subidas que cumplan la regla.",
+    "caption": "Subidas de la rodada, en orden de aparición",
+    "from": "Tramo",
+    "range": "Del {from} al {to}",
+    "length": "Longitud",
+    "gain": "Desnivel",
+    "average": "Pendiente media",
+    "max": "Máxima en 100 m",
+    "grades": "Distancia por pendiente",
+    "bins": {
+      "steepDown": "Bajada fuerte (más de 8 %)",
+      "down": "Bajada (4 a 8 %)",
+      "gentleDown": "Bajada suave (1 a 4 %)",
+      "flat": "Llano (menos de 1 %)",
+      "gentleUp": "Subida suave (1 a 4 %)",
+      "up": "Subida (4 a 8 %)",
+      "steepUp": "Subida fuerte (más de 8 %)"
+    },
+    "rule": "Una subida cuenta si gana al menos 25 m en 300 m o más, con pendiente media de 3 % o más; un rellano corto no la corta. La altitud se suaviza para que el ruido del sensor no invente subidas."
   }
 }

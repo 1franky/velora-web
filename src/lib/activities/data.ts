@@ -62,6 +62,21 @@ export const getActivity = cache(async function getActivity(
 });
 
 export type ActivityLap = components["schemas"]["ActivityLap"];
+export type ActivityClimbs = components["schemas"]["ActivityClimbs"];
+
+/** Subidas y pendientes; `null` si fallan (son una ayuda, no bloquean el detalle). */
+export async function getClimbs(id: string): Promise<ActivityClimbs | null> {
+  try {
+    const { data } = await (
+      await api()
+    ).GET("/activities/{activityId}/climbs", {
+      params: { path: { activityId: id } },
+    });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export async function getStreams(id: string): Promise<Loaded<components["schemas"]["ActivityStreams"]>> {
   try {
