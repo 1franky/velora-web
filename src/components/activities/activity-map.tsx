@@ -7,7 +7,15 @@ import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { hoverPosition } from "@/lib/activities/hover";
 import { KEEPALIVE_MS, MEXICO, createBaseMap, currentTheme, mapLocale } from "@/lib/basemap/client";
-import { TRACK_COLORS, TRACK_SOURCE, basemapStyle, trackZoomFor, type MapTheme } from "@/lib/basemap/style";
+import { newTerritory } from "@/lib/activities/new-territory";
+import {
+  NEW_TERRITORY_COLORS,
+  TRACK_COLORS,
+  TRACK_SOURCE,
+  basemapStyle,
+  trackZoomFor,
+  type MapTheme,
+} from "@/lib/basemap/style";
 import { subscribeTheme } from "@/lib/theme";
 
 type Status = "cargando" | "listo" | "sinRecorrido" | "oculto" | "sinWebgl";
@@ -49,6 +57,42 @@ function drawTrack(map: MapLibreMap, track: TrackFeature, theme: MapTheme) {
     layout,
     paint: { "line-color": colors.line, "line-width": ["interpolate", ["linear"], ["zoom"], 8, 2, 16, 5] },
   });
+}
+
+const NEW_SOURCE = "caminos-nuevos";
+
+/**
+ * Tramos recorridos por primera vez (ADR-019), encima del recorrido. No se dibujan en la primera rodada: todo sería
+ * nuevo. Idempotente como drawTrack.
+ */
+function drawNewTerritory(map: MapLibreMap, theme: MapTheme) {
+  const value = newTerritory.get();
+  const data = {
+    type: "FeatureCollection",
+    features:
+      value && value.geometry && !value.firstActivity
+        ? [{ type: "Feature", geometry: value.geometry, properties: {} }]
+        : [],
+  } as SourceData;
+  const source = map.getSource(NEW_SOURCE);
+  if (source && "setData" in source) {
+    (source as GeoJSONSource).setData(data);
+    return;
+  }
+  map.addSource(NEW_SOURCE, { type: "geojson", data });
+  map.addLayer(
+    {
+      id: NEW_SOURCE,
+      type: "line",
+      source: NEW_SOURCE,
+      layout: { "line-join": "round", "line-cap": "round" },
+      paint: {
+        "line-color": NEW_TERRITORY_COLORS[theme],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 2.5, 16, 6],
+      },
+    },
+    map.getLayer(POSITION_SOURCE) ? POSITION_SOURCE : undefined,
+  );
 }
 
 const POSITION_SOURCE = "posicion";
@@ -150,6 +194,8 @@ export function ActivityMap({ activityId, hasBasemap, mini = false, label }: Map
       await loaded;
       if (cancelled) return;
       drawTrack(instance, track, theme);
+      drawNewTerritory(instance, theme);
+      cleanups.push(newTerritory.subscribe(() => instance.getSource(NEW_SOURCE) && drawNewTerritory(instance, theme)));
       // El punto señalado en las gráficas.
       drawPosition(instance, theme);
       cleanups.push(
@@ -186,6 +232,7 @@ export function ActivityMap({ activityId, hasBasemap, mini = false, label }: Map
         instance.setStyle(basemapStyle(theme, window.location.origin, hasBasemap), { diff: false });
         instance.once("style.load", () => {
           if (track) drawTrack(instance, track, theme);
+          drawNewTerritory(instance, theme);
           drawPosition(instance, theme);
         });
       };

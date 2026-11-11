@@ -542,6 +542,36 @@ createServer(async (req, res) => {
       { "Content-Type": "application/geo+json" },
     );
   }
+  // Caminos nuevos (ADR-019): la más antigua es la primera; el resto tiene un tramo nuevo sintético.
+  if (route === "GET /api/v1/geo/new-territory") {
+    const id = url.searchParams.get("activityId");
+    const index = state.activities.findIndex((a) => a.id === id);
+    const found = state.activities[index];
+    if (!found || found.subType === "INDOOR") {
+      return send(res, 404, {
+        title: "No encontrado",
+        status: 404,
+        detail: "La actividad no existe o no tiene recorrido con GPS.",
+      });
+    }
+    const first = index === state.activities.length - 1;
+    const track = syntheticTrack(found.id, 14).geometry.coordinates.flat();
+    const stretch = track.slice(Math.floor(track.length / 3), Math.floor((2 * track.length) / 3));
+    return send(res, 200, {
+      activityId: id,
+      algorithmVersion: "new-territory/1",
+      toleranceMeters: 25,
+      minStretchMeters: 50,
+      comparedActivities: state.activities.length - 1 - index,
+      firstActivity: first,
+      trimmed: state.privacy > 0,
+      analyzedDistanceMeters: 30_000,
+      newDistanceMeters: first ? 30_000 : 4_200,
+      newFraction: first ? 1 : 0.14,
+      confidence: index % 2 === 0 ? "HIGH" : "LOW",
+      geometry: first ? null : { type: "MultiLineString", coordinates: [stretch] },
+    });
+  }
   const trackMatch = /^GET \/api\/v1\/activities\/([\w-]+)\/track$/.exec(route);
   if (trackMatch) {
     const found = state.activities.find((a) => a.id === trackMatch[1]);

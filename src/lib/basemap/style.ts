@@ -35,6 +35,9 @@ export const TRACK_COLORS: Record<MapTheme, { line: string; casing: string }> = 
   dark: { line: "#f2a03d", casing: "#0d141c" },
 };
 
+/** Tramos recorridos por primera vez (ADR-019): verde azulado, el opuesto del cempasúchil (seguro con daltonismo). */
+export const NEW_TERRITORY_COLORS: Record<MapTheme, string> = { light: "#0f766e", dark: "#4fd1c5" };
+
 /** Estilo con el mapa base, o solo un fondo liso si el archivo no está instalado. `origin` = URL del sitio. */
 export function basemapStyle(theme: MapTheme, origin: string, hasBasemap: boolean): StyleSpecification {
   const flavor = FLAVORS[theme];
