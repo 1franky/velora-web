@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@de0b8e0d869c88f36edd5c6fade56a7aff8b796a. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@1fee087dc436a28c8dc2b4975cbd4eedfda2b940. No editar a mano.
 
 export interface paths {
     "/auth/login": {
@@ -530,6 +530,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/analytics/heart-rate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Tiempo en zonas cardiacas
+         * @description Tiempo en cada zona por porcentaje de la FC máxima del usuario (`hr-zones/1`, ADR-020): Z1 50–60 %, Z2 60–70 %, Z3 70–80 %, Z4 80–90 %, Z5 90 % o más; `belowZonesSeconds` es el tiempo por debajo del 50 %. Cada muestra vale hasta la siguiente, como máximo 10 s (las pausas no cuentan). Sin FC máxima configurada, `zones` viene vacío. Una sola rodada por grupo de duplicados; solo exterior salvo `includeIndoor=true`. Sin `from`: 12 semanas. Indicador de entrenamiento, no diagnóstico médico.
+         */
+        get: operations["getHeartRateZones"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -579,6 +599,8 @@ export interface components {
             /** @enum {string} */
             elevationUnit: "m";
             trackPrivacyMeters: components["schemas"]["TrackPrivacyMeters"];
+            /** @description FC máxima que indicó el usuario para las zonas cardiacas (ADR-020); null si no la indicó. */
+            maxHeartRateBpm: number | null;
         };
         /**
          * @description Metros que se ocultan al inicio y al final de cada recorrido (ADR-016), medidos sobre el camino con una variación estable de ±30 % por actividad; 0 la desactiva (por defecto). Se aplica en el servidor a los recorridos, a las posiciones de las series y a los derivados geoespaciales.
@@ -593,6 +615,8 @@ export interface components {
             /** @enum {string} */
             elevationUnit?: "m";
             trackPrivacyMeters?: components["schemas"]["TrackPrivacyMeters"];
+            /** @description Entre 100 y 230 ppm; 0 la borra. */
+            maxHeartRateBpm?: number & (0 | unknown);
         };
         /** @enum {string} */
         BikeType: "MTB" | "ROAD" | "GRAVEL" | "OTHER";
@@ -1005,6 +1029,26 @@ export interface components {
                 fromPercent: number | null;
                 toPercent: number | null;
                 distanceMeters: number;
+            }[];
+        };
+        HeartRateZones: {
+            /** @example hr-zones/1 */
+            algorithmVersion: string;
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            includeIndoor: boolean;
+            maxHeartRateBpm: number | null;
+            activitiesWithHeartRate: number;
+            activitiesWithoutHeartRate: number;
+            belowZonesSeconds: number;
+            zones: {
+                zone: number;
+                fromBpm: number;
+                /** @description Incluido; null en la zona 5. */
+                toBpm: number | null;
+                seconds: number;
             }[];
         };
     };
@@ -1907,6 +1951,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Eddington"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getHeartRateZones: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+                includeIndoor?: boolean;
+                subType?: components["schemas"]["ActivitySubType"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Zonas */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HeartRateZones"];
                 };
             };
             400: components["responses"]["BadRequest"];

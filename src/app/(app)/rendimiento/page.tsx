@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Suspense } from "react";
+import { HeartRateSection } from "@/components/performance/heart-rate-section";
 import { RecordsSection } from "@/components/performance/records-section";
 import { TrendsView } from "@/components/performance/trends-view";
 import { SUB_TYPES } from "@/lib/activities/filters";
 import { listBikes } from "@/lib/activities/data";
 import { formatDistance, formatDuration, formatElevation } from "@/lib/format/units";
-import { getEddington, getRecords, getTimeseries } from "@/lib/performance/data";
+import { getEddington, getHeartRateZones, getRecords, getTimeseries } from "@/lib/performance/data";
 import {
   GROUPINGS,
   longLabel,
@@ -137,11 +138,28 @@ async function Trends({ searchParams }: { searchParams: PageProps<"/rendimiento"
               </table>
             </div>
           </details>
+          <Suspense fallback={<div aria-hidden className="h-40 animate-pulse rounded-lg bg-superficie-hundida" />}>
+            <Zones filters={filters} from={result.data.from} to={result.data.to} />
+          </Suspense>
           <RecordsSection records={records} eddington={eddington} />
         </>
       )}
     </>
   );
+}
+
+/** Aparte y en su propio Suspense: lee las series de FC de cada rodada del periodo, es lo más lento de la página. */
+async function Zones({
+  filters,
+  from,
+  to,
+}: {
+  filters: { includeIndoor: boolean; subType?: PerformanceOptions["tipo"] };
+  from: string;
+  to: string;
+}) {
+  const data = await getHeartRateZones({ ...filters, from, to });
+  return data ? <HeartRateSection data={data} /> : null;
 }
 
 async function Options({ options, bikes }: { options: PerformanceOptions; bikes: { id: string; name: string }[] }) {

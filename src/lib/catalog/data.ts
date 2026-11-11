@@ -48,6 +48,12 @@ export async function updateTrackPrivacy(trackPrivacyMeters: Preferences["trackP
   return write(() => client.PATCH("/me/preferences", { body: { trackPrivacyMeters } }));
 }
 
+/** FC máxima para las zonas cardiacas; 0 la borra. */
+export async function updateMaxHeartRate(maxHeartRateBpm: number) {
+  const client = await api();
+  return write(() => client.PATCH("/me/preferences", { body: { maxHeartRateBpm } }));
+}
+
 export async function listAllBikes(): Promise<Bike[] | null> {
   try {
     const { data } = await (await api()).GET("/bikes");

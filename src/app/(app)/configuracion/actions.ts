@@ -6,12 +6,13 @@ import {
   createDevice,
   deleteBike,
   updateBike,
+  updateMaxHeartRate,
   updateTimeZone,
   updateTrackPrivacy,
   type WriteResult,
 } from "@/lib/catalog/data";
 import type { FormState } from "@/lib/catalog/form-state";
-import { isValidTimeZone, parseBikeForm, parseDeviceForm } from "@/lib/catalog/forms";
+import { isValidTimeZone, parseBikeForm, parseDeviceForm, parseMaxHeartRate } from "@/lib/catalog/forms";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -37,6 +38,13 @@ export async function savePrivacyAction(_previous: FormState, form: FormData): P
   const step = PRIVACY_STEPS.find((value) => value === meters);
   if (step === undefined) return { status: "error", fields: { trackPrivacyMeters: "invalid" } };
   return settle(await updateTrackPrivacy(step));
+}
+
+/** FC máxima para las zonas cardiacas (ADR-020); vacía la borra. */
+export async function saveMaxHeartRateAction(_previous: FormState, form: FormData): Promise<FormState> {
+  const parsed = parseMaxHeartRate(form.get("maxHeartRateBpm"));
+  if (!parsed.ok) return { status: "error", fields: { maxHeartRateBpm: "heartRate" } };
+  return settle(await updateMaxHeartRate(parsed.value));
 }
 
 export async function createBikeAction(_previous: FormState, form: FormData): Promise<FormState> {

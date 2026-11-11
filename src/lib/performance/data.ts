@@ -7,6 +7,7 @@ import type { TimeseriesQuery } from "./trends";
 export type Timeseries = components["schemas"]["Timeseries"];
 export type Records = components["schemas"]["Records"];
 export type Eddington = components["schemas"]["Eddington"];
+export type HeartRateZones = components["schemas"]["HeartRateZones"];
 type Filters = Pick<TimeseriesQuery, "includeIndoor" | "subType">;
 
 function failure(status: number | undefined): { ok: false; error: LoadError } {
@@ -37,6 +38,16 @@ export async function getRecords(query: Filters): Promise<Records | null> {
 export async function getEddington(query: Filters): Promise<Eddington | null> {
   try {
     const { data } = await (await api()).GET("/analytics/eddington", { params: { query } });
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Tiempo en zonas cardiacas del mismo rango que las tendencias; `null` si la API no responde. */
+export async function getHeartRateZones(query: Filters & { from: string; to: string }): Promise<HeartRateZones | null> {
+  try {
+    const { data } = await (await api()).GET("/analytics/heart-rate", { params: { query } });
     return data ?? null;
   } catch {
     return null;
