@@ -53,6 +53,21 @@ pnpm dev            # http://localhost:3000
 - **Gráficas** (ECharts): un panel por serie con un solo eje y cursor sincronizado entre paneles y con el mapa. Las series se reducen en el servidor a ~1 200 puntos promediando tramos; mínimo y máximo usan todas las muestras. Trazos en `--grafica` (`#c76a0e` / `#d07c26`), validados contra ambas superficies (banda de luminosidad, croma y contraste ≥ 3:1). Sin cursor, cada panel muestra mínimo y máximo.
 - **Accesibilidad**: enlace para saltar al contenido, foco visible, `prefers-reduced-motion` respetado y pruebas axe (WCAG 2.1 AA) en claro y oscuro.
 
+## Despliegue (VPS)
+
+Automático con GitHub Actions, mismo esquema que nexora: cuando `CI` termina con éxito en `main`, `.github/workflows/deploy.yml` entra por SSH al VPS y ejecuta en `/home/francisco/docker/velora/velora-web`:
+
+```bash
+git pull --ff-only origin main
+docker compose -f compose.deploy.yaml up --build -d
+```
+
+- `compose.deploy.yaml` construye `Dockerfile` (`next start`) y publica solo en `127.0.0.1:${VELORA_WEB_PORT:-3007}`; el acceso público entra por el túnel de Cloudflare con HTTPS (requerido: en producción las cookies son `Secure` y `__Host-`).
+- Llega a `velora-api` por la red externa `velora-net` (`VELORA_API_URL=http://velora-api:8080`).
+- Volumen `velora-basemap` montado en `/app/basemap` (`VELORA_BASEMAP_DIR`): copia ahí la salida de `pnpm basemap`; vacío, el recorrido se dibuja sobre fondo liso.
+- `.env` del VPS (no versionado): `VELORA_API_URL`, `VELORA_WEB_PORT`.
+- Secretos del repositorio: `VPS_HOST` y `VPS_DEPLOY_KEY`. "Run workflow" redespliega sin commit.
+
 ## Repositorios relacionados
 
 - `velora-api` — backend (Java + Spring Boot).

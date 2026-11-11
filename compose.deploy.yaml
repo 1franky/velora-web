@@ -1,0 +1,36 @@
+# Despliegue en el VPS de velora-web (servidor de Next.js).
+#
+#   docker compose -f compose.deploy.yaml up --build -d
+#
+# El servidor de Next.js es el único cliente de velora-api (ADR-014): la alcanza por la red Docker "velora-net"
+# (externa, compartida con velora-api; se crea una vez con `docker network create velora-net`).
+# El puerto solo se publica en 127.0.0.1: el acceso público entra por el túnel de Cloudflare con HTTPS, que
+# además es necesario porque en producción las cookies son Secure y con prefijo __Host-.
+name: velora-web
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: velora-web:latest
+    container_name: velora-web
+    restart: unless-stopped
+    environment:
+      VELORA_API_URL: ${VELORA_API_URL:-http://velora-api:8080}
+      VELORA_BASEMAP_DIR: /app/basemap
+    ports:
+      - "127.0.0.1:${VELORA_WEB_PORT:-3007}:3000"
+    volumes:
+      # Mapa base de `pnpm basemap` (ADR-015, ~600 MB). Vacío = recorrido sobre fondo liso.
+      - velora-basemap:/app/basemap:ro
+    networks:
+      - velora-net
+
+networks:
+  velora-net:
+    external: true
+
+volumes:
+  velora-basemap:
+    name: velora-basemap
