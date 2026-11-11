@@ -103,10 +103,6 @@
       "title": "Rutas",
       "body": "Compara recorridos que repites y revisa sus perfiles de elevación, ascensos y descensos."
     },
-    "rendimiento": {
-      "title": "Rendimiento",
-      "body": "Tu distancia y desnivel por semana y por mes, tus récords y tu número de Eddington."
-    },
     "objetivos": {
       "title": "Objetivos",
       "body": "Define metas de distancia o desnivel y sigue tu avance."
@@ -539,5 +535,48 @@
     "compared": "{count, plural, one {Comparado con # rodada anterior.} other {Comparado con # rodadas anteriores.}}",
     "legend": "Los tramos nuevos se marcan en el mapa con este color.",
     "trimmed": "El inicio y el fin ocultos por tu privacidad no se analizan."
+  },
+  "performance": {
+    "title": "Rendimiento",
+    "intro": "Cuánto ruedas con el tiempo: distancia, tiempo y desnivel por semana, mes o año.",
+    "options": {
+      "label": "Opciones de Rendimiento",
+      "grouping": "Agrupar por",
+      "groupings": {
+        "semana": "Semana",
+        "mes": "Mes",
+        "anio": "Año"
+      },
+      "indoor": "Incluir rodillo",
+      "apply": "Aplicar"
+    },
+    "range": {
+      "week": "{count, plural, one {Última semana} other {Últimas # semanas}}",
+      "month": "{count, plural, one {Último mes} other {Últimos # meses}}",
+      "year": "{count, plural, one {Este año} other {Últimos # años}}"
+    },
+    "totals": {
+      "distance": "Distancia",
+      "movingTime": "Tiempo en movimiento",
+      "elevation": "Desnivel positivo",
+      "count": "Rodadas"
+    },
+    "indoorExcluded": "Solo rodadas de exterior.",
+    "indoorIncluded": "Incluye el rodillo (distancia virtual).",
+    "sources": "Distancia: {device, plural, one {# medida por el dispositivo} other {# medidas por el dispositivo}} y {derived, plural, one {# calculada por Velora} other {# calculadas por Velora}}.",
+    "duplicates": "{count, plural, one {Una rodada parece duplicada y se contó una sola vez.} other {# rodadas parecen duplicadas y se contaron una sola vez.}}",
+    "duplicatesLink": "Resolver en Actividades",
+    "charts": {
+      "distance": "Distancia (km)",
+      "elevation": "Desnivel positivo (m)",
+      "hint": "Pasa el cursor o el dedo sobre una barra para ver el periodo.",
+      "distanceReadout": "{distance} en {count, plural, one {# rodada} other {# rodadas}}",
+      "elevationReadout": "{elevation} de desnivel positivo"
+    },
+    "table": {
+      "toggle": "Ver los datos en una tabla",
+      "caption": "Totales por periodo, del más reciente al más antiguo",
+      "period": "Periodo"
+    }
   }
 }
