@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@14ebe0f7b1c55141352202f3289cfd432aaa7b79. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@cc46b438a544f994ebeb65d33aee22bcf3265e21. No editar a mano.
 
 export interface paths {
     "/auth/login": {
@@ -430,6 +430,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/geo/new-territory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Tramos de una actividad recorridos por primera vez
+         * @description Compara el recorrido de la actividad (recortado por la privacidad de inicio y fin) con las rodadas del mismo usuario que empezaron antes (ADR-019). Un punto es nuevo si ninguna pasa a menos de `toleranceMeters`; los tramos nuevos de menos de `minStretchMeters` se cuentan como conocidos (desplazamiento del GPS). `confidence` baja con GPS escaso o cuando lo nuevo corre pegado a caminos conocidos (paralelos o GPS desviado).
+         */
+        get: operations["getNewTerritory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -776,6 +796,31 @@ export interface components {
             sideKm: number;
             /** @description oeste,sur,este,norte del cuadrado en grados; null si no hay celdas. */
             bbox: number[] | null;
+        };
+        NewTerritory: {
+            /** Format: uuid */
+            activityId: string;
+            /** @example new-territory/1 */
+            algorithmVersion: string;
+            toleranceMeters: number;
+            minStretchMeters: number;
+            /** @description Rodadas con recorrido que empezaron antes que esta. */
+            comparedActivities: number;
+            /** @description Sin rodadas anteriores: todo es nuevo. */
+            firstActivity: boolean;
+            /** @description Se analizó el recorrido recortado por la privacidad. */
+            trimmed: boolean;
+            analyzedDistanceMeters: number;
+            newDistanceMeters: number;
+            newFraction: number;
+            /** @enum {string} */
+            confidence: "HIGH" | "MEDIUM" | "LOW";
+            /** @description Tramos nuevos (MultiLineString GeoJSON, WGS 84) o null si no hay. */
+            geometry: null | {
+                /** @constant */
+                type: "MultiLineString";
+                coordinates: number[][][];
+            };
         };
     };
     responses: {
@@ -1552,6 +1597,32 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    getNewTerritory: {
+        parameters: {
+            query: {
+                activityId: string;
+                toleranceMeters?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Caminos nuevos */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewTerritory"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
         };
     };
 }

@@ -525,5 +525,19 @@
       "pending": "{count, plural, one {Calculando las celdas de # rodada…} other {Calculando las celdas de # rodadas…}} Recarga en un momento.",
       "allTime": "Incluye todas tus rodadas. Los inicios y finales ocultos por tu privacidad no cuentan."
     }
+  },
+  "newTerritory": {
+    "title": "Caminos nuevos",
+    "first": "Tu primera rodada registrada: todo el camino es nuevo.",
+    "none": "Todo este recorrido ya lo conocías.",
+    "some": "{distance} por primera vez ({percent} de la rodada)",
+    "confidence": {
+      "HIGH": "Confianza alta: GPS preciso y tramos lejos de caminos que ya conocías.",
+      "MEDIUM": "Confianza media: parte de lo nuevo corre cerca de caminos que ya conocías o el GPS es poco denso.",
+      "LOW": "Confianza baja: lo nuevo corre pegado a caminos conocidos (quizá uno paralelo o el GPS se desvió) o el GPS registró pocos puntos."
+    },
+    "compared": "{count, plural, one {Comparado con # rodada anterior.} other {Comparado con # rodadas anteriores.}}",
+    "legend": "Los tramos nuevos se marcan en el mapa con este color.",
+    "trimmed": "El inicio y el fin ocultos por tu privacidad no se analizan."
   }
 }

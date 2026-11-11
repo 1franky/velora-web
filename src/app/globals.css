@@ -20,6 +20,7 @@
   --positivo: #2f6b4f;
   --negativo: #a3392a;
   --sobre-negativo: #ffffff; /* texto sobre botones destructivos (6.6:1) */
+  --camino-nuevo: #0f766e; /* tramos recorridos por primera vez: verde azulado, distinto del cempasúchil */
   color-scheme: light;
 }
 
@@ -39,6 +40,7 @@
     --positivo: #6fc59a;
     --negativo: #f08a78;
     --sobre-negativo: #121a24;
+    --camino-nuevo: #4fd1c5;
     color-scheme: dark;
   }
 }
@@ -58,6 +60,7 @@
   --positivo: #6fc59a;
   --negativo: #f08a78;
   --sobre-negativo: #121a24;
+  --camino-nuevo: #4fd1c5;
   color-scheme: dark;
 }
 
@@ -74,6 +77,7 @@
   --color-positivo: var(--positivo);
   --color-negativo: var(--negativo);
   --color-sobre-negativo: var(--sobre-negativo);
+  --color-camino-nuevo: var(--camino-nuevo);
   --font-sans: var(--font-barlow), system-ui, sans-serif;
   --font-display: var(--font-barlow-semi), var(--font-barlow), system-ui, sans-serif;
 }

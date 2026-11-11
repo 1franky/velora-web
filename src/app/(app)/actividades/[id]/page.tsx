@@ -9,6 +9,7 @@ import { ActivityCharts } from "@/components/activities/activity-charts";
 import { DuplicatesNotice } from "@/components/activities/duplicates-notice";
 import { EditActivityDialog } from "@/components/settings/dialogs";
 import { listAllBikes } from "@/lib/catalog/data";
+import { NewTerritoryPanel } from "@/components/activities/new-territory-panel";
 import { ActivityMap } from "@/components/activities/activity-map";
 import { LapsTable } from "@/components/activities/laps-table";
 import { getActivity, getLaps, getStreams, type ActivityDetail } from "@/lib/activities/data";
@@ -97,6 +98,7 @@ async function Detail({ params, searchParams }: DetailProps) {
         <DuplicatesNotice activityId={activity.id} />
       </Suspense>
       {activity.hasTrack && <ActivityMap activityId={activity.id} hasBasemap={hasBasemap} />}
+      {activity.hasTrack && <NewTerritoryPanel activityId={activity.id} />}
       <Metrics activity={activity} />
       {activity.streamTypes.length > 0 && (
         <Suspense fallback={<div aria-hidden className="h-96 animate-pulse rounded-lg bg-superficie-hundida" />}>

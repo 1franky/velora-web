@@ -126,6 +126,13 @@ test("compara los duplicados y conserva uno", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "No encontramos esta página" })).toBeVisible();
 });
 
+test("la única rodada es toda camino nuevo", async ({ page }) => {
+  await login(page, tcxActivity);
+  const panel = page.getByRole("region", { name: "Caminos nuevos" });
+  // Se calcula al consultar (ADR-019); margen para la base desechable, que localmente puede correr emulada.
+  await expect(panel).toContainText("Tu primera rodada registrada: todo el camino es nuevo.", { timeout: 20_000 });
+});
+
 test("configura una bicicleta y la asigna a la rodada", async ({ page }) => {
   await login(page, "/configuracion");
   await page.getByRole("button", { name: "Agregar bicicleta" }).click();
