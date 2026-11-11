@@ -39,6 +39,8 @@ test("una rodada sin altitud no muestra subidas", async ({ page }) => {
 test("las subidas no tienen violaciones de accesibilidad WCAG A/AA", async ({ page }) => {
   await page.goto(OUTDOOR);
   await expect(page.getByRole("region", { name: "Subidas" })).toBeVisible();
+  // Next envía el <title> después del contenido: analizar antes daría un falso "sin título".
+  await expect(page).toHaveTitle(/\S/);
   const results = await new AxeBuilder({ page })
     .include("#subidas-titulo")
     .include("section:has(#subidas-titulo)")

@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@ceeedea6e60c89fbcbb20635cfbc64f0eb2ad8e0. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@c920fb484de187a996ab010b8ab409bb91e9330d. No editar a mano.
 
 export interface paths {
     "/auth/login": {
@@ -550,6 +550,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/analytics/training-load": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Carga de entrenamiento semanal estimada
+         * @description **Estimación** con el TRIMP de Edwards (`edwards-trimp/1`, ADR-020): minutos en cada zona cardiaca por el número de la zona (Z1 × 1 … Z5 × 5), sumados por semana local (lunes a domingo), las últimas `weeks` semanas hasta la actual. Solo cuenta rodadas con FC y requiere la FC máxima del usuario; sin ella `load` es 0 y `maxHeartRateBpm` null. Mismas reglas de duplicados y rodillo que el resto. Indicador de entrenamiento: no evalúa riesgo de lesión ni da recomendaciones médicas (§12).
+         */
+        get: operations["getTrainingLoad"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1049,6 +1069,24 @@ export interface components {
                 /** @description Incluido; null en la zona 5. */
                 toBpm: number | null;
                 seconds: number;
+            }[];
+        };
+        TrainingLoad: {
+            /** @example edwards-trimp/1 */
+            method: string;
+            /** @constant */
+            estimated: true;
+            maxHeartRateBpm: number | null;
+            includeIndoor: boolean;
+            weeks: {
+                /** Format: date */
+                start: string;
+                /** Format: date */
+                end: string;
+                /** @description Puntos TRIMP (estimación). */
+                load: number;
+                activitiesWithHeartRate: number;
+                activitiesWithoutHeartRate: number;
             }[];
         };
     };
@@ -1978,6 +2016,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HeartRateZones"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getTrainingLoad: {
+        parameters: {
+            query?: {
+                weeks?: number;
+                includeIndoor?: boolean;
+                subType?: components["schemas"]["ActivitySubType"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Carga por semana */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrainingLoad"];
                 };
             };
             400: components["responses"]["BadRequest"];

@@ -100,18 +100,21 @@ test("muestra los cuadros de 1 km y lleva al mayor cuadrado", async ({ page }) =
 
 test("pide acercarse para ver celdas desde muy lejos", async ({ page }) => {
   await mapReady(page);
-  await page.getByRole("button", { name: "Alejar" }).click();
-  await page.getByRole("button", { name: "Alejar" }).click();
-  await page.getByRole("button", { name: "Alejar" }).click();
-  await page.getByRole("button", { name: "Alejar" }).click();
-  await page.getByRole("button", { name: "Alejar" }).click();
   await page.getByRole("radio", { name: "Hexágonos" }).check();
-  await expect(page.getByRole("status").filter({ hasText: "Acércate para ver las celdas." })).toBeVisible();
+  // Cada clic aleja desde el zoom a medio animar: varios clics rápidos alejan menos de lo que parece. Se aleja hasta
+  // que el aviso aparece (los hexágonos piden zoom 10 o más; la vista inicial está en 12 como máximo).
+  const notice = page.getByRole("status").filter({ hasText: "Acércate para ver las celdas." });
+  await expect(async () => {
+    await page.getByRole("button", { name: "Alejar" }).click();
+    await expect(notice).toBeVisible({ timeout: 1_000 });
+  }).toPass({ timeout: 15_000 });
 });
 
 test("el Explorador no tiene violaciones de accesibilidad WCAG A/AA", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await mapReady(page);
+  // Next envía el <title> después del contenido: analizar antes daría un falso "sin título".
+  await expect(page).toHaveTitle(/\S/);
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   expect(results.violations).toEqual([]);
 });

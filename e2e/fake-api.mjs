@@ -663,6 +663,29 @@ createServer(async (req, res) => {
         : [],
     });
   }
+  // Carga estimada (edwards-trimp/1): 12 semanas sintéticas hasta la del 2 de noviembre; sin FC máxima, 0.
+  if (route === "GET /api/v1/analytics/training-load") {
+    const max = state.maxHeartRate;
+    const weeks = Array.from({ length: 12 }, (_, i) => {
+      const start = new Date(Date.UTC(2026, 10, 2 - 7 * (11 - i)));
+      const end = new Date(start);
+      end.setUTCDate(end.getUTCDate() + 6);
+      return {
+        start: start.toISOString().slice(0, 10),
+        end: end.toISOString().slice(0, 10),
+        load: max ? [320, 410, 280, 0, 515, 460, 390, 610, 540, 300, 470, 220][i] : 0,
+        activitiesWithHeartRate: i === 3 ? 0 : 3,
+        activitiesWithoutHeartRate: i === 11 ? 1 : 0,
+      };
+    });
+    return send(res, 200, {
+      method: "edwards-trimp/1",
+      estimated: true,
+      maxHeartRateBpm: max,
+      includeIndoor: url.searchParams.get("includeIndoor") === "true",
+      weeks,
+    });
+  }
   // Zonas cardiacas (hr-zones/1): tiempos sintéticos fijos; sin FC máxima, sin zonas.
   if (route === "GET /api/v1/analytics/heart-rate") {
     const max = state.maxHeartRate;

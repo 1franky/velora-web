@@ -624,6 +624,15 @@
       "explain": "Zonas por porcentaje de tu FC máxima ({max} ppm): Z1 50–60 %, Z2 60–70 %, Z3 70–80 %, Z4 80–90 % y Z5 90 % o más. Por debajo de Z1: {below}.",
       "withoutHr": "{count, plural, one {Una rodada del periodo no tiene FC.} other {# rodadas del periodo no tienen FC.}}",
       "notMedical": "Es una guía de entrenamiento, no una evaluación médica."
+    },
+    "load": {
+      "title": "Carga de entrenamiento (estimada)",
+      "chart": "Puntos de carga por semana, últimas 12 semanas",
+      "hint": "Pasa el cursor o el dedo sobre una barra para ver la semana.",
+      "readout": "{load} puntos de {count, plural, one {# rodada con FC} other {# rodadas con FC}}{without, plural, =0 {} one {; # sin FC no cuenta} other {; # sin FC no cuentan}}",
+      "noMaximum": "La carga se estima con tus zonas cardiacas, y para eso necesitamos tu FC máxima.",
+      "setMaximum": "Indícala en Configuración",
+      "method": "Es una estimación: cada minuto en una zona suma el número de esa zona (un minuto en Z1 vale 1; en Z5, 5). Solo cuentan las rodadas con frecuencia cardiaca. Sirve para comparar tus semanas entre sí, no para evaluar tu salud."
     }
   },
   "climbs": {

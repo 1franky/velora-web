@@ -3,12 +3,13 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Suspense } from "react";
 import { HeartRateSection } from "@/components/performance/heart-rate-section";
+import { LoadSection } from "@/components/performance/load-section";
 import { RecordsSection } from "@/components/performance/records-section";
 import { TrendsView } from "@/components/performance/trends-view";
 import { SUB_TYPES } from "@/lib/activities/filters";
 import { listBikes } from "@/lib/activities/data";
 import { formatDistance, formatDuration, formatElevation } from "@/lib/format/units";
-import { getEddington, getHeartRateZones, getRecords, getTimeseries } from "@/lib/performance/data";
+import { getEddington, getHeartRateZones, getRecords, getTimeseries, getTrainingLoad } from "@/lib/performance/data";
 import {
   GROUPINGS,
   longLabel,
@@ -141,6 +142,9 @@ async function Trends({ searchParams }: { searchParams: PageProps<"/rendimiento"
           <Suspense fallback={<div aria-hidden className="h-40 animate-pulse rounded-lg bg-superficie-hundida" />}>
             <Zones filters={filters} from={result.data.from} to={result.data.to} />
           </Suspense>
+          <Suspense fallback={<div aria-hidden className="h-72 animate-pulse rounded-lg bg-superficie-hundida" />}>
+            <Load filters={filters} />
+          </Suspense>
           <RecordsSection records={records} eddington={eddington} />
         </>
       )}
@@ -160,6 +164,12 @@ async function Zones({
 }) {
   const data = await getHeartRateZones({ ...filters, from, to });
   return data ? <HeartRateSection data={data} /> : null;
+}
+
+/** Siempre por semana (12): la carga se lee de las series de FC, como las zonas. */
+async function Load({ filters }: { filters: { includeIndoor: boolean; subType?: PerformanceOptions["tipo"] } }) {
+  const data = await getTrainingLoad(filters);
+  return data ? <LoadSection data={data} /> : null;
 }
 
 async function Options({ options, bikes }: { options: PerformanceOptions; bikes: { id: string; name: string }[] }) {
