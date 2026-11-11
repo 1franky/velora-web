@@ -131,6 +131,11 @@ test("la única rodada es toda camino nuevo", async ({ page }) => {
   const panel = page.getByRole("region", { name: "Caminos nuevos" });
   // Se calcula al consultar (ADR-019); margen para la base desechable, que localmente puede correr emulada.
   await expect(panel).toContainText("Tu primera rodada registrada: todo el camino es nuevo.", { timeout: 20_000 });
+  // Ondulaciones de 80 m: las rampas centrales pasan del 3 % y cuentan como subidas suaves.
+  const climbs = page.getByRole("region", { name: "Subidas" });
+  const rows = climbs.getByRole("table", { name: /Subidas de la rodada/ }).getByRole("row");
+  await expect(rows.nth(1)).toContainText(/Del .+ km al .+ km/);
+  await expect(climbs.getByRole("listitem").filter({ hasText: "Subida suave (1 a 4 %)" })).toContainText("km");
 });
 
 test("configura una bicicleta y la asigna a la rodada", async ({ page }) => {

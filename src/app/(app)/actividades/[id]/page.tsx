@@ -6,13 +6,14 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ActivityActions } from "@/components/activities/activity-actions";
 import { ActivityCharts } from "@/components/activities/activity-charts";
+import { ClimbsSection } from "@/components/activities/climbs-section";
 import { DuplicatesNotice } from "@/components/activities/duplicates-notice";
 import { EditActivityDialog } from "@/components/settings/dialogs";
 import { listAllBikes } from "@/lib/catalog/data";
 import { NewTerritoryPanel } from "@/components/activities/new-territory-panel";
 import { ActivityMap } from "@/components/activities/activity-map";
 import { LapsTable } from "@/components/activities/laps-table";
-import { getActivity, getLaps, getStreams, type ActivityDetail } from "@/lib/activities/data";
+import { getActivity, getClimbs, getLaps, getStreams, type ActivityDetail } from "@/lib/activities/data";
 import { prepareSeries } from "@/lib/activities/series";
 import { basemapAvailable } from "@/lib/basemap/available";
 import {
@@ -105,6 +106,11 @@ async function Detail({ params, searchParams }: DetailProps) {
           <Charts id={activity.id} />
         </Suspense>
       )}
+      {activity.streamTypes.includes("ALTITUDE") && (
+        <Suspense>
+          <Climbs id={activity.id} />
+        </Suspense>
+      )}
       {activity.lapCount > 1 && (
         <Suspense>
           <Laps id={activity.id} />
@@ -182,6 +188,11 @@ async function Charts({ id }: { id: string }) {
   return prepared.series.length > 0 && (prepared.distanceKm || prepared.elapsedSeconds) ? (
     <ActivityCharts data={prepared} />
   ) : null;
+}
+
+async function Climbs({ id }: { id: string }) {
+  const data = await getClimbs(id);
+  return data?.available ? <ClimbsSection data={data} /> : null;
 }
 
 async function Laps({ id }: { id: string }) {

@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@3aee9c6ae9e1708fa32d20acb9c8cc79c5952880. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@2d37461224043e6bad49bf58ba6f6512032bed55. No editar a mano.
 
 export interface paths {
     "/auth/login": {
@@ -266,6 +266,26 @@ export interface paths {
         };
         /** Vueltas de una actividad */
         get: operations["getActivityLaps"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/activities/{activityId}/climbs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Subidas y distribución de pendientes de una actividad
+         * @description Detectadas con la altitud remuestreada cada 20 m y suavizada en 100 m (`climbs/1`): una subida cuenta si sube al menos 25 m en al menos 300 m con pendiente media de 3 % o más; un descenso de menos del 10 % de lo subido (entre 10 y 30 m) no la corta. `available` es false sin altitud o sin distancia. Solo distancias y altitudes: no incluye posiciones.
+         */
+        get: operations["getActivityClimbs"];
         put?: never;
         post?: never;
         delete?: never;
@@ -963,6 +983,30 @@ export interface components {
             overall: components["schemas"]["EddingtonValue"];
             thisYear: components["schemas"]["EddingtonValue"];
         };
+        ActivityClimbs: {
+            /** Format: uuid */
+            activityId: string;
+            /** @example climbs/1 */
+            algorithmVersion: string;
+            available: boolean;
+            climbs: {
+                startDistanceMeters: number;
+                endDistanceMeters: number;
+                lengthMeters: number;
+                startAltitudeMeters: number;
+                endAltitudeMeters: number;
+                elevationGainMeters: number;
+                averageGradePercent: number;
+                /** @description Pendiente máxima sostenida en 100 m. */
+                maxGradePercent: number;
+            }[];
+            /** @description Metros por rango de pendiente; `fromPercent`/`toPercent` nulos en los extremos abiertos. */
+            gradeDistribution: {
+                fromPercent: number | null;
+                toPercent: number | null;
+                distanceMeters: number;
+            }[];
+        };
     };
     responses: {
         /** @description Solicitud inválida */
@@ -1495,6 +1539,30 @@ export interface operations {
                     "application/json": {
                         items: components["schemas"]["ActivityLap"][];
                     };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getActivityClimbs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Subidas */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityClimbs"];
                 };
             };
             401: components["responses"]["Unauthorized"];
