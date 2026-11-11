@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@55f96b28bdad4d2aa268ea212a8dc33bc9a39aa1. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@0f2235a6881978a19b6e745d57358d45f21f4880. No editar a mano.
 
 export interface paths {
     "/auth/login": {
@@ -244,7 +244,7 @@ export interface paths {
         };
         /**
          * Recorrido de la actividad como GeoJSON simplificado para un nivel de zoom
-         * @description Un tramo por segmento (las pausas no se dibujan). La simplificación usa una tolerancia de aproximadamente un píxel en el zoom pedido; el track original no se modifica. Solo para el propietario.
+         * @description Un tramo por segmento (las pausas no se dibujan). La simplificación usa una tolerancia de aproximadamente un píxel en el zoom pedido; el track original no se modifica. Solo para el propietario. Con privacidad de inicio y fin activa se recorta antes de simplificar (ADR-016); si la rodada es más corta que lo que se oculta, responde 404 con un detalle que lo explica.
          */
         get: operations["getActivityTrack"];
         put?: never;
@@ -439,7 +439,13 @@ export interface components {
             distanceUnit: "km";
             /** @enum {string} */
             elevationUnit: "m";
+            trackPrivacyMeters: components["schemas"]["TrackPrivacyMeters"];
         };
+        /**
+         * @description Metros que se ocultan al inicio y al final de cada recorrido (ADR-016), medidos sobre el camino con una variación estable de ±30 % por actividad; 0 la desactiva (por defecto). Se aplica en el servidor a los recorridos, a las posiciones de las series y a los derivados geoespaciales.
+         * @enum {integer}
+         */
+        TrackPrivacyMeters: 0 | 200 | 300 | 500 | 1000;
         /** @description Solo se modifican los campos enviados. */
         PreferencesUpdate: {
             timeZone?: string;
@@ -447,6 +453,7 @@ export interface components {
             distanceUnit?: "km";
             /** @enum {string} */
             elevationUnit?: "m";
+            trackPrivacyMeters?: components["schemas"]["TrackPrivacyMeters"];
         };
         /** @enum {string} */
         BikeType: "MTB" | "ROAD" | "GRAVEL" | "OTHER";
@@ -610,7 +617,7 @@ export interface components {
         StreamType: "TIME" | "LATITUDE" | "LONGITUDE" | "ALTITUDE" | "DISTANCE" | "SPEED" | "HEART_RATE" | "CADENCE" | "POWER" | "TEMPERATURE";
         ActivityStreams: {
             sampleCount: number;
-            /** @description Una serie por tipo, todas de longitud sampleCount; null donde no hay dato. TIME en milisegundos desde startedAt; unidades SI (m, m/s, °C) y grados WGS84. */
+            /** @description Una serie por tipo, todas de longitud sampleCount; null donde no hay dato. TIME en milisegundos desde startedAt; unidades SI (m, m/s, °C) y grados WGS84. Con privacidad de inicio y fin activa, LATITUDE y LONGITUDE son null en los tramos ocultos (ADR-016). */
             streams: {
                 [key: string]: (number | null)[];
             };
@@ -633,6 +640,8 @@ export interface components {
                 pointCount: number;
                 returnedPointCount: number;
                 zoom: number;
+                /** @description El inicio y el fin están ocultos por la privacidad (ADR-016); el recuadro corresponde a lo visible. Las distancias ocultas no se informan. */
+                trimmed: boolean;
             };
         };
         ActivityLap: {

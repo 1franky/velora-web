@@ -9,7 +9,7 @@ import { hoverPosition } from "@/lib/activities/hover";
 import { TRACK_COLORS, TRACK_SOURCE, basemapStyle, trackZoomFor, type MapTheme } from "@/lib/basemap/style";
 import { subscribeTheme } from "@/lib/theme";
 
-type Status = "cargando" | "listo" | "sinRecorrido" | "sinWebgl";
+type Status = "cargando" | "listo" | "sinRecorrido" | "oculto" | "sinWebgl";
 
 /** Límites de México: vista inicial mientras llega el recorrido (no revela ninguna ubicación del usuario). */
 const MEXICO: [number, number, number, number] = [-118.6, 14.3, -86.5, 32.8];
@@ -27,9 +27,13 @@ function currentTheme(): MapTheme {
 type TrackFeature = components["schemas"]["ActivityTrack"];
 type SourceData = Parameters<GeoJSONSource["setData"]>[0];
 
-async function fetchTrack(activityId: string, zoom: number): Promise<TrackFeature | null> {
+type TrackResult = { ok: true; track: TrackFeature } | { ok: false; hidden: boolean };
+
+async function fetchTrack(activityId: string, zoom: number): Promise<TrackResult> {
   const response = await fetch(`/api/actividades/${activityId}/recorrido?zoom=${zoom}`, { cache: "no-store" });
-  return response.ok ? ((await response.json()) as TrackFeature) : null;
+  if (response.ok) return { ok: true, track: (await response.json()) as TrackFeature };
+  const body = (await response.json().catch(() => ({}))) as { error?: string };
+  return { ok: false, hidden: body.error === "hidden" };
 }
 
 /** Fuente y capas del recorrido; idempotente para volver a agregarlas al cambiar el estilo (tema). */
@@ -105,6 +109,7 @@ export function ActivityMap({ activityId, hasBasemap, mini = false, label }: Map
   const t = useTranslations("map");
   const container = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<Status>("cargando");
+  const [trimmed, setTrimmed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -159,11 +164,12 @@ export function ActivityMap({ activityId, hasBasemap, mini = false, label }: Map
       const loaded = new Promise<void>((resolve) => instance.once("load", () => resolve()));
       const first = await fetchTrack(activityId, 12);
       if (cancelled) return;
-      if (!first) {
-        setStatus("sinRecorrido");
+      if (!first.ok) {
+        setStatus(first.hidden ? "oculto" : "sinRecorrido");
         return;
       }
-      track = first;
+      track = first.track;
+      setTrimmed(first.track.properties.trimmed);
       fetchedZoom = 12;
       await loaded;
       if (cancelled) return;
@@ -180,9 +186,9 @@ export function ActivityMap({ activityId, hasBasemap, mini = false, label }: Map
         if (zoom <= fetchedZoom) return;
         fetchedZoom = zoom;
         const detailed = await fetchTrack(activityId, zoom);
-        if (detailed && !cancelled) {
-          track = detailed;
-          drawTrack(instance, detailed, theme);
+        if (detailed.ok && !cancelled) {
+          track = detailed.track;
+          drawTrack(instance, detailed.track, theme);
         }
       };
       instance.on("moveend", () => void refine());
@@ -229,6 +235,7 @@ export function ActivityMap({ activityId, hasBasemap, mini = false, label }: Map
         <div ref={container} data-estado={status} className="h-48 w-full" />
         {status === "sinWebgl" && <Overlay text={t("noWebgl")} />}
         {status === "sinRecorrido" && <Overlay text={t("trackUnavailable")} />}
+        {status === "oculto" && <Overlay text={t("hidden")} />}
       </div>
     );
   }
@@ -242,7 +249,9 @@ export function ActivityMap({ activityId, hasBasemap, mini = false, label }: Map
         <div ref={container} data-estado={status} className="h-[22rem] w-full lg:h-[30rem]" />
         {status === "sinWebgl" && <Overlay text={t("noWebgl")} />}
         {status === "sinRecorrido" && <Overlay text={t("trackUnavailable")} />}
+        {status === "oculto" && <Overlay text={t("hidden")} />}
       </div>
+      {trimmed && <p className="text-sm text-tinta-suave">{t("trimmed")}</p>}
       {!hasBasemap && <p className="text-sm text-tinta-suave">{t("noBasemap")}</p>}
     </section>
   );

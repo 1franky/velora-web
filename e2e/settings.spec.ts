@@ -118,3 +118,28 @@ test.describe("actividades", () => {
     await expect(page.getByText(/, Gravel de diario$/)).toBeVisible();
   });
 });
+
+test.describe("privacidad del mapa", () => {
+  test("oculta el inicio y el fin, y avisa si oculta todo el recorrido", async ({ page }) => {
+    const privacy = page.getByRole("combobox", { name: "Ocultar al inicio y al final" });
+    await expect(privacy).toHaveValue("0");
+
+    await privacy.selectOption({ label: "300 m" });
+    await page.getByRole("button", { name: "Guardar privacidad" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Privacidad guardada." })).toBeVisible();
+
+    await page.goto("/actividades/a0000000-0000-4000-8000-000000000001");
+    await expect(page.locator('[data-estado="listo"]')).toBeAttached({ timeout: 20_000 });
+    await expect(page.getByText(/El inicio y el fin de este recorrido están ocultos/)).toBeVisible();
+
+    await page.goto("/configuracion");
+    await page.getByRole("combobox", { name: "Ocultar al inicio y al final" }).selectOption({ label: "1 km" });
+    await page.getByRole("button", { name: "Guardar privacidad" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Privacidad guardada." })).toBeVisible();
+
+    await page.goto("/actividades/a0000000-0000-4000-8000-000000000001");
+    await expect(page.getByText(/Tu privacidad de inicio y fin oculta todo este recorrido/)).toBeVisible({
+      timeout: 20_000,
+    });
+  });
+});

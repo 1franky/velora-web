@@ -191,6 +191,22 @@
       "addTitle": "Agregar dispositivo",
       "addSubmit": "Agregar dispositivo",
       "saving": "Guardando…"
+    },
+    "privacy": {
+      "title": "Privacidad del mapa",
+      "hint": "Oculta el inicio y el fin de tus recorridos para que el mapa no muestre dónde vives o trabajas. La distancia varía un poco en cada rodada para que no se pueda deducir el punto de salida.",
+      "label": "Ocultar al inicio y al final",
+      "options": {
+        "0": "No ocultar",
+        "200": "200 m",
+        "300": "300 m",
+        "500": "500 m",
+        "1000": "1 km"
+      },
+      "save": "Guardar privacidad",
+      "saving": "Guardando…",
+      "saved": "Privacidad guardada.",
+      "error": "No se pudo guardar. Intenta de nuevo."
     }
   },
   "activities": {
@@ -340,7 +356,9 @@
     "noWebgl": "Tu navegador no puede mostrar el mapa (WebGL desactivado o no disponible).",
     "trackUnavailable": "No pudimos cargar el recorrido. Intenta recargar la página.",
     "noBasemap": "El mapa base no está instalado en este servidor; el recorrido se muestra sin calles. Para instalarlo, ejecuta pnpm basemap.",
-    "canvasLabel": "Mapa interactivo: usa las flechas para moverte y las teclas + y − para acercar o alejar"
+    "canvasLabel": "Mapa interactivo: usa las flechas para moverte y las teclas + y − para acercar o alejar",
+    "trimmed": "El inicio y el fin de este recorrido están ocultos por tu privacidad (Configuración).",
+    "hidden": "Tu privacidad de inicio y fin oculta todo este recorrido: es más corto que la distancia que ocultas."
   },
   "charts": {
     "title": "Gráficas",

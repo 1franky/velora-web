@@ -57,6 +57,7 @@ function detail(activity) {
   return {
     ...summary,
     timeZone: "America/Mexico_City",
+    privacy: 0,
     sourceType: format,
     deviceId: null,
     elevationLossMeters: summary.elevationGainMeters,
@@ -445,7 +446,14 @@ createServer(async (req, res) => {
   }
   if (route === "PATCH /api/v1/me/preferences") {
     state.timeZone = body.timeZone ?? state.timeZone;
-    return send(res, 200, { locale: "es-MX", timeZone: state.timeZone, distanceUnit: "km", elevationUnit: "m" });
+    state.privacy = body.trackPrivacyMeters ?? state.privacy;
+    return send(res, 200, {
+      locale: "es-MX",
+      timeZone: state.timeZone,
+      distanceUnit: "km",
+      elevationUnit: "m",
+      trackPrivacyMeters: state.privacy,
+    });
   }
   const patchMatch = /^PATCH \/api\/v1\/activities\/([\w-]+)$/.exec(route);
   if (patchMatch) {
@@ -482,7 +490,18 @@ createServer(async (req, res) => {
     }
     const zoom = Number(url.searchParams.get("zoom") ?? 14);
     state.trackZooms.push(zoom);
-    return send(res, 200, syntheticTrack(found.id, zoom));
+    // Privacidad (ADR-016) simplificada: con 1 km la rodada sintética queda oculta; con menos, se recorta un poco.
+    if (state.privacy >= 1000) {
+      return send(res, 404, { title: "No encontrado", status: 404, detail: "El recorrido completo queda oculto." });
+    }
+    const track = syntheticTrack(found.id, zoom);
+    if (state.privacy > 0) {
+      track.geometry.coordinates = track.geometry.coordinates.map((part, i, all) =>
+        part.slice(i === 0 ? 3 : 0, i === all.length - 1 ? -3 : undefined),
+      );
+    }
+    track.properties.trimmed = state.privacy > 0;
+    return send(res, 200, track);
   }
   const deleteMatch = /^DELETE \/api\/v1\/activities\/([\w-]+)$/.exec(route);
   if (deleteMatch) {
@@ -540,7 +559,13 @@ createServer(async (req, res) => {
     return send(res, 200, {
       id: "6f1c3c62-5a0e-4a4e-9a51-0b2c8f8d2f10",
       email: OWNER.email,
-      preferences: { locale: "es-MX", timeZone: state.timeZone, distanceUnit: "km", elevationUnit: "m" },
+      preferences: {
+        locale: "es-MX",
+        timeZone: state.timeZone,
+        distanceUnit: "km",
+        elevationUnit: "m",
+        trackPrivacyMeters: state.privacy,
+      },
     });
   }
   send(res, 404, { title: "No encontrado", status: 404 });
