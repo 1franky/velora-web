@@ -217,6 +217,14 @@ test("Inicio resume la rodada con datos reales", async ({ page }) => {
   await expectNoViolations(page);
 });
 
+test("Rendimiento suma la rodada de exterior y no cuenta el duplicado borrado", async ({ page }) => {
+  await login(page, "/rendimiento");
+  const rodadas = page.getByRole("term").filter({ hasText: "Rodadas" }).locator("..");
+  await expect(rodadas.locator("dd")).toHaveText("1");
+  await expect(page.getByRole("figure", { name: "Distancia (km)" })).toBeVisible();
+  await expectNoViolations(page);
+});
+
 test("borra la actividad y cierra sesión", async ({ page }) => {
   await login(page, tcxActivity);
   await page.getByRole("button", { name: "Borrar actividad" }).click();

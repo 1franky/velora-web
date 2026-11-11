@@ -31,7 +31,13 @@ jobs:
       - name: Pruebas unitarias
         run: pnpm test
       - name: Navegador para E2E
-        run: pnpm exec playwright install --with-deps chromium
+        # Si apt no alcanza los espejos de Ubuntu (pasó el 11/11/2026), se instala solo el navegador: la imagen del
+        # runner ya trae casi todas sus dependencias; si faltara alguna, Chromium falla al arrancar con un error claro.
+        run: |
+          pnpm exec playwright install --with-deps chromium || {
+            echo "::warning::No se pudieron instalar las dependencias del sistema; se instala solo Chromium."
+            pnpm exec playwright install chromium
+          }
       - name: Build y E2E (incluye accesibilidad)
         run: pnpm e2e
       - uses: actions/upload-artifact@v7
@@ -68,7 +74,13 @@ jobs:
       - name: Dependencias
         run: pnpm install --frozen-lockfile
       - name: Navegador para E2E
-        run: pnpm exec playwright install --with-deps chromium
+        # Si apt no alcanza los espejos de Ubuntu (pasó el 11/11/2026), se instala solo el navegador: la imagen del
+        # runner ya trae casi todas sus dependencias; si faltara alguna, Chromium falla al arrancar con un error claro.
+        run: |
+          pnpm exec playwright install --with-deps chromium || {
+            echo "::warning::No se pudieron instalar las dependencias del sistema; se instala solo Chromium."
+            pnpm exec playwright install chromium
+          }
       - name: E2E contra la API real
         run: pnpm e2e:real
         env:

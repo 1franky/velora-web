@@ -226,6 +226,8 @@ function reset() {
     trackZooms: [],
     heatmapQueries: [],
     cellQueries: [],
+    timeseriesQueries: [],
+    duplicatesExcluded: 0,
     explorationPending: 0,
   };
 }
@@ -346,6 +348,7 @@ createServer(async (req, res) => {
 
   if (route === "POST /__reset") return (reset(), send(res, 204));
   if (route === "POST /__empty") return ((state.activities = []), send(res, 204));
+  if (route === "POST /__duplicados-omitidos") return ((state.duplicatesExcluded = 2), send(res, 204));
   if (route === "POST /__exploracion-pendiente") return ((state.explorationPending = 3), send(res, 204));
   if (route === "POST /__duplicados") {
     // La misma rodada (la más reciente del seed) importada también en GPX (sin FC ni cadencia) y TCX.
@@ -374,6 +377,7 @@ createServer(async (req, res) => {
       trackZooms: state.trackZooms,
       heatmapQueries: state.heatmapQueries,
       cellQueries: state.cellQueries,
+      timeseriesQueries: state.timeseriesQueries,
     });
   }
 
@@ -541,6 +545,75 @@ createServer(async (req, res) => {
       { type: "FeatureCollection", grid, truncated: false, features },
       { "Content-Type": "application/geo+json" },
     );
+  }
+  // Tendencias (ADR-020): suma las rodadas sintéticas por periodo con las mismas reglas que la API real
+  // (exterior por omisión); los duplicados omitidos se fijan con /__duplicados-omitidos.
+  if (route === "GET /api/v1/analytics/timeseries") {
+    const q = url.searchParams;
+    const granularity = q.get("granularity") ?? "week";
+    state.timeseriesQueries.push(q.toString());
+    const includeIndoor = q.get("includeIndoor") === "true";
+    const startOf = (iso) => {
+      const d = new Date(`${iso}T00:00:00Z`);
+      if (granularity === "year") return `${iso.slice(0, 4)}-01-01`;
+      if (granularity === "month") return `${iso.slice(0, 7)}-01`;
+      d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+      return d.toISOString().slice(0, 10);
+    };
+    const step = (iso, n = 1) => {
+      const d = new Date(`${iso}T00:00:00Z`);
+      if (granularity === "year") d.setUTCFullYear(d.getUTCFullYear() + n);
+      else if (granularity === "month") d.setUTCMonth(d.getUTCMonth() + n);
+      else d.setUTCDate(d.getUTCDate() + 7 * n);
+      return d.toISOString().slice(0, 10);
+    };
+    const to = q.get("to") ?? "2026-11-08";
+    const count = granularity === "year" ? 2 : 12;
+    const from = q.get("from") ?? step(startOf(to), -(count - 1));
+    const buckets = [];
+    for (let start = startOf(from); start <= to; start = step(start)) {
+      const end = new Date(`${step(start)}T00:00:00Z`);
+      end.setUTCDate(end.getUTCDate() - 1);
+      buckets.push({
+        start,
+        end: end.toISOString().slice(0, 10),
+        activityCount: 0,
+        distanceMeters: 0,
+        movingTimeSeconds: 0,
+        elevationGainMeters: 0,
+      });
+    }
+    const counted = state.activities.filter(
+      (a) =>
+        (includeIndoor || a.subType !== "INDOOR") &&
+        (!q.get("subType") || a.subType === q.get("subType")) &&
+        (!q.get("bikeId") || a.bikeId === q.get("bikeId")),
+    );
+    for (const a of counted) {
+      const bucket = buckets.find((b) => b.start === startOf(a.localStartDate));
+      if (!bucket) continue;
+      bucket.activityCount += 1;
+      bucket.distanceMeters += a.distanceMeters ?? 0;
+      bucket.movingTimeSeconds += a.movingTimeSeconds;
+      bucket.elevationGainMeters += a.elevationGainMeters ?? 0;
+    }
+    const sum = (key) => buckets.reduce((total, b) => total + b[key], 0);
+    const totals = {
+      activityCount: sum("activityCount"),
+      distanceMeters: sum("distanceMeters"),
+      movingTimeSeconds: sum("movingTimeSeconds"),
+      elevationGainMeters: sum("elevationGainMeters"),
+    };
+    return send(res, 200, {
+      granularity,
+      from: buckets[0].start,
+      to,
+      includeIndoor,
+      duplicatesExcluded: state.duplicatesExcluded,
+      distanceSources: { deviceReported: totals.activityCount, derived: 0 },
+      totals,
+      buckets,
+    });
   }
   // Caminos nuevos (ADR-019): la más antigua es la primera; el resto tiene un tramo nuevo sintético.
   if (route === "GET /api/v1/geo/new-territory") {

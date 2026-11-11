@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@cc46b438a544f994ebeb65d33aee22bcf3265e21. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@54c6209cab9507593cdee3d18f3cb062e209fb32. No editar a mano.
 
 export interface paths {
     "/auth/login": {
@@ -450,6 +450,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/analytics/timeseries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Tendencias por semana, mes o año
+         * @description Totales por periodo de fecha deportiva local (semanas de lunes a domingo), con ceros en los periodos sin rodadas (ADR-020). Cuenta una sola rodada de cada grupo de posibles duplicados sin resolver (`duplicatesExcluded` dice cuántas se omitieron) y, salvo `includeIndoor=true`, solo rodadas de exterior. Sin `from`: 12 semanas, 12 meses o desde el año de la primera rodada; sin `to`: hoy.
+         */
+        get: operations["getTimeseries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -821,6 +841,46 @@ export interface components {
                 type: "MultiLineString";
                 coordinates: number[][][];
             };
+        };
+        TimeseriesTotals: {
+            activityCount: number;
+            distanceMeters: number;
+            movingTimeSeconds: number;
+            elevationGainMeters: number;
+        };
+        Timeseries: {
+            /** @enum {string} */
+            granularity: "week" | "month" | "year";
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            includeIndoor: boolean;
+            /** @description Posibles duplicados sin resolver del rango que no se sumaron. */
+            duplicatesExcluded: number;
+            /** @description Origen de la distancia de las rodadas sumadas (del dispositivo o calculada por Velora). */
+            distanceSources: {
+                deviceReported: number;
+                derived: number;
+            };
+            totals: components["schemas"]["TimeseriesTotals"];
+            buckets: components["schemas"]["TimeseriesBucket"][];
+        };
+        TimeseriesBucket: {
+            /**
+             * Format: date
+             * @description Primer día del periodo (lunes en semanas).
+             */
+            start: string;
+            /**
+             * Format: date
+             * @description Último día del periodo.
+             */
+            end: string;
+            activityCount: number;
+            distanceMeters: number;
+            movingTimeSeconds: number;
+            elevationGainMeters: number;
         };
     };
     responses: {
@@ -1623,6 +1683,35 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    getTimeseries: {
+        parameters: {
+            query?: {
+                granularity?: "week" | "month" | "year";
+                from?: string;
+                to?: string;
+                includeIndoor?: boolean;
+                subType?: components["schemas"]["ActivitySubType"];
+                bikeId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Serie */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Timeseries"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
         };
     };
 }
