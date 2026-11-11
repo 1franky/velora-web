@@ -5,13 +5,8 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { longLabel, shortLabel, type TimeseriesQuery } from "@/lib/performance/trends";
 import { resolvedTheme, subscribeResolvedTheme } from "@/lib/theme";
 
-type Bucket = {
-  start: string;
-  end: string;
-  activityCount: number;
-  distanceMeters: number;
-  elevationGainMeters: number;
-};
+/** Cualquier periodo con su primer y último día; el valor lo extrae `value`. */
+type Period = { start: string; end: string };
 
 function themeColors() {
   const style = getComputedStyle(document.documentElement);
@@ -26,7 +21,7 @@ function themeColors() {
   };
 }
 
-type Props = {
+type Props<Bucket extends Period> = {
   title: string;
   id: string;
   buckets: Bucket[];
@@ -44,7 +39,16 @@ type Props = {
  * Una sola medida por gráfica (sin doble eje). El periodo en curso, el último, va en cempasúchil con su valor escrito
  * y su etiqueta en negritas; los demás en gris de contexto. La tabla de Rendimiento tiene los mismos datos.
  */
-export function TrendChart({ title, id, buckets, granularity, value, axis, readout, hint }: Props) {
+export function TrendChart<Bucket extends Period>({
+  title,
+  id,
+  buckets,
+  granularity,
+  value,
+  axis,
+  readout,
+  hint,
+}: Props<Bucket>) {
   const container = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState<number | null>(null);
   const theme = useSyncExternalStore(subscribeResolvedTheme, resolvedTheme, () => "light");

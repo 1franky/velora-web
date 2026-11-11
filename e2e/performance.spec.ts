@@ -111,12 +111,30 @@ test("sin FC máxima invita a indicarla y, con ella, muestra el tiempo en cada z
   await expect(zones).toContainText("no una evaluación médica");
 });
 
+test("la carga se presenta como estimación y necesita la FC máxima", async ({ page }) => {
+  const load = page.getByRole("region", { name: "Carga de entrenamiento (estimada)" });
+  await expect(load).toContainText("necesitamos tu FC máxima");
+  await expect(load).toContainText("Es una estimación");
+  await expect(load.getByRole("figure")).toHaveCount(0);
+
+  await page.goto("/configuracion");
+  await page.getByLabel("FC máxima (ppm)").fill("190");
+  await page.getByRole("button", { name: "Guardar FC máxima" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "FC máxima guardada." })).toBeVisible();
+  await page.goto("/rendimiento");
+  await expect(load.getByRole("figure", { name: "Puntos de carga por semana, últimas 12 semanas" })).toBeVisible();
+  await expect(load).toContainText("no para evaluar tu salud");
+});
+
 test("Rendimiento no tiene violaciones de accesibilidad WCAG A/AA", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.getByRole("figure", { name: "Distancia (km)" })).toBeVisible();
   // Las zonas cargan en su propio Suspense: analizar antes vería el esqueleto a medio reemplazar.
   await expect(page.getByRole("region", { name: "Zonas de frecuencia cardiaca" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Récords" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Carga de entrenamiento (estimada)" })).toBeVisible();
+  // Next envía el <title> después del contenido: analizar antes daría un falso "sin título".
+  await expect(page).toHaveTitle(/\S/);
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   expect(results.violations).toEqual([]);
 });

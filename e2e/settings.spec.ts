@@ -79,6 +79,8 @@ test("registra un dispositivo", async ({ page }) => {
 
 test("no tiene violaciones de accesibilidad WCAG A/AA, también con un formulario abierto", async ({ page }) => {
   await expect(bikes(page)).toBeVisible();
+  // Next envía el <title> después del contenido: analizar antes daría un falso "sin título".
+  await expect(page).toHaveTitle(/\S/);
   expect((await new AxeBuilder({ page }).withTags(WCAG).analyze()).violations).toEqual([]);
 
   await page.getByRole("button", { name: "Agregar bicicleta" }).click();
@@ -87,6 +89,8 @@ test("no tiene violaciones de accesibilidad WCAG A/AA, también con un formulari
     .getByRole("button", { name: "Agregar bicicleta" })
     .click();
   await expect(page.getByText("Este campo es obligatorio.")).toBeVisible();
+  // Next envía el <title> después del contenido: analizar antes daría un falso "sin título".
+  await expect(page).toHaveTitle(/\S/);
   expect((await new AxeBuilder({ page }).withTags(WCAG).analyze()).violations).toEqual([]);
 });
 

@@ -5,7 +5,13 @@ import type { TimeseriesQuery } from "@/lib/performance/trends";
 import { formatDistance, formatElevation } from "@/lib/format/units";
 import { TrendChart } from "./trend-chart";
 
-type Bucket = Parameters<typeof TrendChart>[0]["buckets"][number];
+type Bucket = {
+  start: string;
+  end: string;
+  activityCount: number;
+  distanceMeters: number;
+  elevationGainMeters: number;
+};
 
 const NUMBER = new Intl.NumberFormat("es-MX", { maximumFractionDigits: 0 });
 const kilometers = (b: Bucket) => b.distanceMeters / 1000;

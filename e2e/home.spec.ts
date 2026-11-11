@@ -13,6 +13,8 @@ test("sin sesión, la página inicial lleva al login en es-MX", async ({ page })
 test("el login no tiene violaciones de accesibilidad WCAG A/AA", async ({ page }) => {
   await page.goto("/login");
 
+  // Next envía el <title> después del contenido: analizar antes daría un falso "sin título".
+  await expect(page).toHaveTitle(/\S/);
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
 
   expect(results.violations).toEqual([]);

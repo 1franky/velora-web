@@ -33,6 +33,8 @@ async function login(page: Page, next = "/") {
 }
 
 async function expectNoViolations(page: Page) {
+  // Next envía el <title> después del contenido: analizar antes daría un falso "sin título".
+  await expect(page).toHaveTitle(/\S/);
   expect((await new AxeBuilder({ page }).withTags(WCAG).analyze()).violations).toEqual([]);
 }
 
@@ -243,6 +245,8 @@ test("Rendimiento suma la rodada de exterior y no cuenta el duplicado borrado", 
   const zones = page.getByRole("region", { name: "Zonas de frecuencia cardiaca" });
   await expect(zones.getByRole("listitem")).toHaveCount(5);
   await expect(zones).toContainText("190 ppm");
+  const load = page.getByRole("region", { name: "Carga de entrenamiento (estimada)" });
+  await expect(load.getByRole("figure", { name: "Puntos de carga por semana, últimas 12 semanas" })).toBeVisible();
   await expectNoViolations(page);
 });
 

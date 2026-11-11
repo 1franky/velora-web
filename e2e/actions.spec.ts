@@ -17,6 +17,8 @@ test.beforeEach(async ({ page, request }) => {
 });
 
 async function expectNoViolations(page: Page) {
+  // Next envía el <title> después del contenido: analizar antes daría un falso "sin título".
+  await expect(page).toHaveTitle(/\S/);
   const results = await new AxeBuilder({ page }).withTags(WCAG).analyze();
   expect(results.violations).toEqual([]);
 }

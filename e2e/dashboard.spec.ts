@@ -71,11 +71,15 @@ test("no tiene violaciones de accesibilidad WCAG A/AA en claro ni en oscuro", as
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.getByRole("region", { name: "Últimos 12 meses" }).locator("canvas")).toBeVisible();
   const wcag = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
+  // Next envía el <title> después del contenido: analizar antes daría un falso "sin título".
+  await expect(page).toHaveTitle(/\S/);
   expect((await new AxeBuilder({ page }).withTags(wcag).analyze()).violations).toEqual([]);
 
   await page.evaluate(() => localStorage.setItem("velora-tema", "dark"));
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await expect(page.getByRole("region", { name: "Últimos 12 meses" }).locator("canvas")).toBeVisible();
+  // Next envía el <title> después del contenido: analizar antes daría un falso "sin título".
+  await expect(page).toHaveTitle(/\S/);
   expect((await new AxeBuilder({ page }).withTags(wcag).analyze()).violations).toEqual([]);
 });
