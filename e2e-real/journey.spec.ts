@@ -223,7 +223,11 @@ test("Inicio resume la rodada con datos reales", async ({ page }) => {
 });
 
 test("Rendimiento suma la rodada de exterior y no cuenta el duplicado borrado", async ({ page }) => {
-  await login(page, "/rendimiento");
+  await login(page, "/configuracion");
+  await page.getByLabel("FC máxima (ppm)").fill("190");
+  await page.getByRole("button", { name: "Guardar FC máxima" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "FC máxima guardada." })).toBeVisible();
+  await page.goto("/rendimiento");
   const rodadas = page.getByRole("term").filter({ hasText: "Rodadas" }).locator("..");
   await expect(rodadas.locator("dd")).toHaveText("1");
   await expect(page.getByRole("figure", { name: "Distancia (km)" })).toBeVisible();
@@ -235,6 +239,10 @@ test("Rendimiento suma la rodada de exterior y no cuenta el duplicado borrado", 
     .getByRole("listitem")
     .filter({ hasText: "Rodada más larga" });
   await expect(longest.getByRole("link", { name: "Rodada de prueba editada" })).toBeVisible();
+  // La rodada sintética tiene FC: con 190 ppm de máxima hay tiempo en zonas, leído de sus series reales.
+  const zones = page.getByRole("region", { name: "Zonas de frecuencia cardiaca" });
+  await expect(zones.getByRole("listitem")).toHaveCount(5);
+  await expect(zones).toContainText("190 ppm");
   await expectNoViolations(page);
 });
 

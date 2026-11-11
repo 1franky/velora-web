@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { BikeActiveToggle } from "@/components/settings/bike-active-toggle";
+import { HeartRateForm } from "@/components/settings/heart-rate-form";
 import { PrivacyForm } from "@/components/settings/privacy-form";
 import { AddBikeDialog, AddDeviceDialog, EditBikeDialog } from "@/components/settings/dialogs";
 import { TimeZoneForm } from "@/components/settings/time-zone-form";
@@ -32,6 +33,12 @@ export default async function SettingsPage() {
       <Section id="privacidad" title={t("privacy.title")} hint={t("privacy.hint")}>
         <Suspense fallback={skeleton}>
           <Privacy />
+        </Suspense>
+      </Section>
+
+      <Section id="frecuencia-cardiaca" title={t("heartRate.title")} hint={t("heartRate.hint")}>
+        <Suspense fallback={skeleton}>
+          <HeartRate />
         </Suspense>
       </Section>
 
@@ -114,6 +121,12 @@ async function Privacy() {
   const [me, t] = await Promise.all([getMe(), getTranslations("settings.timeZone")]);
   if (!me) return <p className="text-negativo">{t("unavailable")}</p>;
   return <PrivacyForm current={me.preferences.trackPrivacyMeters} />;
+}
+
+async function HeartRate() {
+  const [me, t] = await Promise.all([getMe(), getTranslations("settings.timeZone")]);
+  if (!me) return <p className="text-negativo">{t("unavailable")}</p>;
+  return <HeartRateForm current={me.preferences.maxHeartRateBpm} />;
 }
 
 async function Bikes() {

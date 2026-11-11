@@ -228,6 +228,7 @@ function reset() {
     cellQueries: [],
     timeseriesQueries: [],
     recordsQueries: [],
+    maxHeartRate: null,
     duplicatesExcluded: 0,
     explorationPending: 0,
   };
@@ -459,12 +460,15 @@ createServer(async (req, res) => {
   if (route === "PATCH /api/v1/me/preferences") {
     state.timeZone = body.timeZone ?? state.timeZone;
     state.privacy = body.trackPrivacyMeters ?? state.privacy;
+    if (body.maxHeartRateBpm !== undefined)
+      state.maxHeartRate = body.maxHeartRateBpm === 0 ? null : body.maxHeartRateBpm;
     return send(res, 200, {
       locale: "es-MX",
       timeZone: state.timeZone,
       distanceUnit: "km",
       elevationUnit: "m",
       trackPrivacyMeters: state.privacy,
+      maxHeartRateBpm: state.maxHeartRate,
     });
   }
   const patchMatch = /^PATCH \/api\/v1\/activities\/([\w-]+)$/.exec(route);
@@ -659,6 +663,27 @@ createServer(async (req, res) => {
         : [],
     });
   }
+  // Zonas cardiacas (hr-zones/1): tiempos sintéticos fijos; sin FC máxima, sin zonas.
+  if (route === "GET /api/v1/analytics/heart-rate") {
+    const max = state.maxHeartRate;
+    const lower = max ? [50, 60, 70, 80, 90].map((p) => Math.round((max * p) / 100)) : [];
+    return send(res, 200, {
+      algorithmVersion: "hr-zones/1",
+      from: url.searchParams.get("from") ?? "2026-08-17",
+      to: url.searchParams.get("to") ?? "2026-11-08",
+      includeIndoor: url.searchParams.get("includeIndoor") === "true",
+      maxHeartRateBpm: max,
+      activitiesWithHeartRate: 20,
+      activitiesWithoutHeartRate: 2,
+      belowZonesSeconds: max ? 1_800 : 0,
+      zones: lower.map((from, i) => ({
+        zone: i + 1,
+        fromBpm: from,
+        toBpm: i < 4 ? lower[i + 1] - 1 : null,
+        seconds: [7_200, 21_600, 14_400, 5_400, 1_200][i],
+      })),
+    });
+  }
   // Récords y Eddington (ADR-020): calculados sobre las rodadas sintéticas con las mismas reglas que la API real.
   const counted = (q) =>
     state.activities.filter(
@@ -842,6 +867,7 @@ createServer(async (req, res) => {
         distanceUnit: "km",
         elevationUnit: "m",
         trackPrivacyMeters: state.privacy,
+        maxHeartRateBpm: state.maxHeartRate,
       },
     });
   }

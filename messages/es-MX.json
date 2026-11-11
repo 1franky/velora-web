@@ -199,6 +199,16 @@
       "saving": "Guardando…",
       "saved": "Privacidad guardada.",
       "error": "No se pudo guardar. Intenta de nuevo."
+    },
+    "heartRate": {
+      "title": "Frecuencia cardiaca",
+      "hint": "Con tu FC máxima, Rendimiento muestra cuánto tiempo pasas en cada zona. Si no la indicas, no se muestran zonas: no la adivinamos.",
+      "label": "FC máxima (ppm)",
+      "fieldHint": "La más alta que has visto en un esfuerzo máximo o la que te indicó un profesional. Déjala vacía para quitarla.",
+      "save": "Guardar FC máxima",
+      "saving": "Guardando…",
+      "saved": "FC máxima guardada.",
+      "error": "No se pudo guardar. Intenta de nuevo."
     }
   },
   "activities": {
@@ -465,7 +475,8 @@
       "required": "Este campo es obligatorio.",
       "tooLong": "Es demasiado largo.",
       "invalid": "El valor no es válido.",
-      "range": "Debe ser mayor que 0 y hasta 50."
+      "range": "Debe ser mayor que 0 y hasta 50.",
+      "heartRate": "Escribe un número entero entre 100 y 230, o déjalo vacío."
     }
   },
   "editActivity": {
@@ -601,6 +612,18 @@
         "next": "{missing, plural, one {Te falta # día} other {Te faltan # días}} de {km} km o más para llegar a {km}.",
         "explain": "Un Eddington de {number} significa que has rodado al menos {number} km en {number} días distintos. Cuenta por día: se suman las rodadas del mismo día."
       }
+    },
+    "heartRate": {
+      "title": "Zonas de frecuencia cardiaca",
+      "noMaximum": "Para ver tu tiempo en cada zona necesitamos tu FC máxima.",
+      "setMaximum": "Indícala en Configuración",
+      "noData": "Ninguna rodada de este periodo tiene frecuencia cardiaca.",
+      "zone": "Zona {zone}",
+      "rangeBpm": "{from}–{to} ppm",
+      "fromBpm": "{from} ppm o más",
+      "explain": "Zonas por porcentaje de tu FC máxima ({max} ppm): Z1 50–60 %, Z2 60–70 %, Z3 70–80 %, Z4 80–90 % y Z5 90 % o más. Por debajo de Z1: {below}.",
+      "withoutHr": "{count, plural, one {Una rodada del periodo no tiene FC.} other {# rodadas del periodo no tienen FC.}}",
+      "notMedical": "Es una guía de entrenamiento, no una evaluación médica."
     }
   },
   "climbs": {

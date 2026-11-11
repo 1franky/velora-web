@@ -62,3 +62,19 @@ describe("isValidTimeZone", () => {
     expect(isValidTimeZone("")).toBe(false);
   });
 });
+
+describe("parseMaxHeartRate", () => {
+  it("vacío borra la FC máxima y un entero de 100 a 230 la guarda", async () => {
+    const { parseMaxHeartRate } = await import("./forms");
+    expect(parseMaxHeartRate("")).toEqual({ ok: true, value: 0 });
+    expect(parseMaxHeartRate(" 186 ")).toEqual({ ok: true, value: 186 });
+    expect(parseMaxHeartRate("230")).toEqual({ ok: true, value: 230 });
+  });
+
+  it("rechaza fuera de rango, decimales y texto", async () => {
+    const { parseMaxHeartRate } = await import("./forms");
+    for (const raw of ["99", "231", "180.5", "rápido", "0"]) {
+      expect(parseMaxHeartRate(raw)).toEqual({ ok: false });
+    }
+  });
+});

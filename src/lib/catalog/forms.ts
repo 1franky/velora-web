@@ -5,7 +5,7 @@
 export const BIKE_TYPES = ["MTB", "ROAD", "GRAVEL", "OTHER"] as const;
 export const ACTIVITY_TYPES = ["MOUNTAIN_BIKE", "ROAD", "GRAVEL", "INDOOR", "OTHER"] as const;
 
-export type FieldError = "required" | "tooLong" | "invalid" | "range";
+export type FieldError = "required" | "tooLong" | "invalid" | "range" | "heartRate";
 export type Parsed<T> = { ok: true; value: T } | { ok: false; fields: Record<string, FieldError> };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -104,3 +104,13 @@ export const MEXICO_TIME_ZONES = [
   "America/Tijuana",
   "America/Bahia_Banderas",
 ] as const;
+
+/**
+ * FC máxima del formulario (ADR-020): vacío la borra (0 para la API); si no, un entero entre 100 y 230 ppm.
+ */
+export function parseMaxHeartRate(raw: FormDataEntryValue | null): { ok: true; value: number } | { ok: false } {
+  const text = String(raw ?? "").trim();
+  if (text === "") return { ok: true, value: 0 };
+  const value = Number(text);
+  return Number.isInteger(value) && value >= 100 && value <= 230 ? { ok: true, value } : { ok: false };
+}

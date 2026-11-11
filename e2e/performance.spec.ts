@@ -88,9 +88,35 @@ test("los récords siguen el tipo y el rodillo, no el periodo", async ({ page })
   expect(stats.recordsQueries.at(-1)).toBe("includeIndoor=false&subType=MOUNTAIN_BIKE");
 });
 
+test("sin FC máxima invita a indicarla y, con ella, muestra el tiempo en cada zona", async ({ page }) => {
+  const zones = page.getByRole("region", { name: "Zonas de frecuencia cardiaca" });
+  await expect(zones).toContainText("Para ver tu tiempo en cada zona necesitamos tu FC máxima.");
+  await zones.getByRole("link", { name: "Indícala en Configuración" }).click();
+  await expect(page).toHaveURL(/\/configuracion#frecuencia-cardiaca$/);
+
+  const field = page.getByLabel("FC máxima (ppm)");
+  await field.fill("250");
+  await page.getByRole("button", { name: "Guardar FC máxima" }).click();
+  await expect(page.getByText("Escribe un número entero entre 100 y 230, o déjalo vacío.")).toBeVisible();
+  await field.fill("190");
+  await page.getByRole("button", { name: "Guardar FC máxima" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "FC máxima guardada." })).toBeVisible();
+
+  await page.goto("/rendimiento");
+  const zone2 = zones.getByRole("listitem").filter({ hasText: "Zona 2" });
+  await expect(zone2).toContainText("114–132 ppm");
+  await expect(zone2).toContainText("6:00:00, 42%");
+  await expect(zones.getByRole("listitem").filter({ hasText: "Zona 5" })).toContainText("171 ppm o más");
+  await expect(zones).toContainText("2 rodadas del periodo no tienen FC.");
+  await expect(zones).toContainText("no una evaluación médica");
+});
+
 test("Rendimiento no tiene violaciones de accesibilidad WCAG A/AA", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.getByRole("figure", { name: "Distancia (km)" })).toBeVisible();
+  // Las zonas cargan en su propio Suspense: analizar antes vería el esqueleto a medio reemplazar.
+  await expect(page.getByRole("region", { name: "Zonas de frecuencia cardiaca" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Récords" })).toBeVisible();
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   expect(results.violations).toEqual([]);
 });
