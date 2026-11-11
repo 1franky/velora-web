@@ -6,23 +6,11 @@ import type { components } from "@/lib/api/schema";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { hoverPosition } from "@/lib/activities/hover";
+import { KEEPALIVE_MS, MEXICO, createBaseMap, currentTheme, mapLocale } from "@/lib/basemap/client";
 import { TRACK_COLORS, TRACK_SOURCE, basemapStyle, trackZoomFor, type MapTheme } from "@/lib/basemap/style";
 import { subscribeTheme } from "@/lib/theme";
 
 type Status = "cargando" | "listo" | "sinRecorrido" | "oculto" | "sinWebgl";
-
-/** Límites de México: vista inicial mientras llega el recorrido (no revela ninguna ubicación del usuario). */
-const MEXICO: [number, number, number, number] = [-118.6, 14.3, -86.5, 32.8];
-/** Mantiene vigente el access token mientras el mapa pide teselas (esas rutas no pasan por Proxy). */
-const KEEPALIVE_MS = 4 * 60 * 1000;
-
-let protocolRegistered = false;
-
-function currentTheme(): MapTheme {
-  const forced = document.documentElement.dataset.theme;
-  if (forced === "light" || forced === "dark") return forced;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
 
 type TrackFeature = components["schemas"]["ActivityTrack"];
 type SourceData = Parameters<GeoJSONSource["setData"]>[0];
@@ -120,40 +108,28 @@ export function ActivityMap({ activityId, hasBasemap, mini = false, label }: Map
     const cleanups: (() => void)[] = [];
 
     async function start() {
-      const [maplibre, { Protocol }] = await Promise.all([import("maplibre-gl"), import("pmtiles")]);
       if (cancelled || !container.current) return;
-      if (!protocolRegistered) {
-        // Copiado por scripts/vendor-maplibre.mjs: la URL que calcula MapLibre no sobrevive al empaquetado.
-        maplibre.setWorkerUrl(`/vendor/maplibre-gl/${maplibre.getVersion()}/maplibre-gl-worker.mjs`);
-        maplibre.addProtocol("pmtiles", new Protocol().tile);
-        protocolRegistered = true;
+      const created = await createBaseMap({
+        container: container.current,
+        theme,
+        hasBasemap,
+        bounds: MEXICO,
+        attributionControl: { compact: true },
+        interactive: !mini,
+        cooperativeGestures: !mini,
+        maxZoom: 18,
+        locale: mapLocale(t, mini && label ? label : t("canvasLabel")),
+      });
+      if (cancelled) {
+        created?.map.remove();
+        return;
       }
-      try {
-        map = new maplibre.Map({
-          container: container.current,
-          style: basemapStyle(theme, window.location.origin, hasBasemap),
-          bounds: MEXICO,
-          attributionControl: { compact: true },
-          interactive: !mini,
-          cooperativeGestures: !mini,
-          maxZoom: 18,
-          locale: {
-            "NavigationControl.ZoomIn": t("zoomIn"),
-            "NavigationControl.ZoomOut": t("zoomOut"),
-            "NavigationControl.ResetBearing": t("resetBearing"),
-            "FullscreenControl.Enter": t("fullscreenEnter"),
-            "FullscreenControl.Exit": t("fullscreenExit"),
-            "AttributionControl.ToggleAttribution": t("toggleAttribution"),
-            "CooperativeGesturesHandler.WindowsHelpText": t("gestureWindows"),
-            "CooperativeGesturesHandler.MacHelpText": t("gestureMac"),
-            "CooperativeGesturesHandler.MobileHelpText": t("gestureMobile"),
-            "Map.Title": mini && label ? label : t("canvasLabel"),
-          },
-        });
-      } catch {
+      if (!created) {
         setStatus("sinWebgl");
         return;
       }
+      const { maplibre } = created;
+      map = created.map;
       const instance = map;
       if (!mini) {
         instance.addControl(new maplibre.NavigationControl({ showCompass: false }), "top-right");

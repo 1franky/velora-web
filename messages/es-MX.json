@@ -99,10 +99,6 @@
   },
   "sections": {
     "soonLabel": "En preparación",
-    "explorador": {
-      "title": "Explorador",
-      "body": "Un mapa de calor de todo lo que has rodado y las zonas que te faltan por descubrir."
-    },
     "rutas": {
       "title": "Rutas",
       "body": "Compara recorridos que repites y revisa sus perfiles de elevación, ascensos y descensos."
@@ -487,5 +483,21 @@
     "noBikes": "Registra tus bicicletas en Configuración.",
     "submit": "Guardar cambios",
     "saving": "Guardando…"
+  },
+  "explorer": {
+    "title": "Explorador",
+    "intro": "Todas tus rodadas sobre el mapa. Donde las líneas se enciman y el color se intensifica es por donde más veces has pasado.",
+    "mapLabel": "Mapa de calor de tus rodadas",
+    "canvasLabel": "Mapa interactivo de tus rodadas: usa las flechas para moverte y las teclas + y − para acercar o alejar",
+    "noMatches": "Ninguna rodada con GPS coincide con estos filtros.",
+    "noGps": "Tus rodadas no tienen GPS (por ejemplo, en rodillo), así que no hay nada que dibujar.",
+    "privacyOn": "Los inicios y finales de cada rodada están ocultos por tu privacidad.",
+    "privacyOff": "Los inicios y finales de tus rodadas se ven completos.",
+    "privacyLink": "Cambiar la privacidad",
+    "empty": {
+      "title": "Aún no hay nada que explorar",
+      "body": "Importa tus archivos FIT, GPX o TCX y aquí aparecerán todos tus recorridos juntos.",
+      "action": "Importar actividades"
+    }
   }
 }

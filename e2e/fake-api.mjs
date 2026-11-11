@@ -224,6 +224,7 @@ function reset() {
     devices: [],
     timeZone: "America/Mexico_City",
     trackZooms: [],
+    heatmapQueries: [],
   };
 }
 reset();
@@ -368,6 +369,7 @@ createServer(async (req, res) => {
       logins: state.logins,
       lastUploadBytes: state.lastUploadBytes,
       trackZooms: state.trackZooms,
+      heatmapQueries: state.heatmapQueries,
     });
   }
 
@@ -476,6 +478,13 @@ createServer(async (req, res) => {
   if (jobMatch) {
     const found = job(jobMatch[1]);
     return found ? send(res, 200, found) : send(res, 404, { title: "No encontrado", status: 404 });
+  }
+  // Mapa de calor (ADR-017): la API falsa no genera teselas (siempre vacías, 204); registra la consulta recibida
+  // para comprobar que la web reenvía los filtros. Las teselas reales se prueban en e2e-real.
+  if (/^GET \/api\/v1\/geo\/heatmap\/\d+\/\d+\/\d+$/.test(route)) {
+    state.heatmapQueries.push(url.searchParams.toString());
+    res.writeHead(204, { "Cache-Control": "private, no-cache" });
+    return res.end();
   }
   const trackMatch = /^GET \/api\/v1\/activities\/([\w-]+)\/track$/.exec(route);
   if (trackMatch) {
