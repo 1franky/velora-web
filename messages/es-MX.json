@@ -498,6 +498,32 @@
       "title": "Aún no hay nada que explorar",
       "body": "Importa tus archivos FIT, GPX o TCX y aquí aparecerán todos tus recorridos juntos.",
       "action": "Importar actividades"
+    },
+    "layers": {
+      "legend": "Qué mostrar en el mapa",
+      "recorridos": "Solo recorridos",
+      "cuadros": "Cuadros de 1 km",
+      "hexagonos": "Hexágonos"
+    },
+    "showSquare": "Ver mi mayor cuadrado",
+    "cells": {
+      "zoomIn": "Acércate para ver las celdas.",
+      "truncated": "Hay demasiadas celdas en esta vista: se muestran las más recorridas. Acércate para verlas todas.",
+      "unavailable": "No pudimos cargar las celdas. Mueve el mapa para intentarlo de nuevo.",
+      "allTime": "Las celdas incluyen todas tus rodadas; los filtros solo cambian las líneas."
+    },
+    "stats": {
+      "title": "Territorio explorado",
+      "squares": "Cuadros de 1 km",
+      "squaresHint": "{area} km² recorridos en México",
+      "largestSquare": "Mayor cuadrado",
+      "squareValue": "{size} × {size} km",
+      "squareHint": "{area} km² sin un solo cuadro sin visitar",
+      "noSquare": "Aún no hay cuadros recorridos",
+      "hexagons": "Hexágonos",
+      "hexagonsHint": "Unos {area} km² (cuadrícula H3, área aproximada)",
+      "pending": "{count, plural, one {Calculando las celdas de # rodada…} other {Calculando las celdas de # rodadas…}} Recarga en un momento.",
+      "allTime": "Incluye todas tus rodadas. Los inicios y finales ocultos por tu privacidad no cuentan."
     }
   }
 }

@@ -225,6 +225,8 @@ function reset() {
     timeZone: "America/Mexico_City",
     trackZooms: [],
     heatmapQueries: [],
+    cellQueries: [],
+    explorationPending: 0,
   };
 }
 reset();
@@ -344,6 +346,7 @@ createServer(async (req, res) => {
 
   if (route === "POST /__reset") return (reset(), send(res, 204));
   if (route === "POST /__empty") return ((state.activities = []), send(res, 204));
+  if (route === "POST /__exploracion-pendiente") return ((state.explorationPending = 3), send(res, 204));
   if (route === "POST /__duplicados") {
     // La misma rodada (la más reciente del seed) importada también en GPX (sin FC ni cadencia) y TCX.
     const original = seedActivities()[0];
@@ -370,6 +373,7 @@ createServer(async (req, res) => {
       lastUploadBytes: state.lastUploadBytes,
       trackZooms: state.trackZooms,
       heatmapQueries: state.heatmapQueries,
+      cellQueries: state.cellQueries,
     });
   }
 
@@ -485,6 +489,58 @@ createServer(async (req, res) => {
     state.heatmapQueries.push(url.searchParams.toString());
     res.writeHead(204, { "Cache-Control": "private, no-cache" });
     return res.end();
+  }
+  // Celdas de exploración (ADR-018): cuadros sintéticos de ~1 km alrededor de las rodadas sintéticas (20, -100).
+  if (route === "GET /api/v1/geo/exploration/summary") {
+    return send(res, 200, {
+      algorithmVersion: "exploration-cells/1",
+      processedActivities: 25,
+      pendingActivities: state.explorationPending,
+      h3: { resolution: 9, cellCount: 1234, approxAreaKm2: 130.0 },
+      metricGrid: { cellSizeMeters: 1000, cellCount: 87, areaKm2: 87 },
+    });
+  }
+  if (route === "GET /api/v1/geo/exploration/largest-square") {
+    return send(res, 200, {
+      algorithmVersion: "largest-square/1",
+      cellSizeMeters: 1000,
+      size: 3,
+      sideKm: 3,
+      bbox: [-100.02, 19.99, -99.99, 20.02],
+    });
+  }
+  if (route === "GET /api/v1/geo/exploration/cells") {
+    const grid = url.searchParams.get("grid") ?? "MX1KM";
+    state.cellQueries.push(url.searchParams.toString());
+    const features = [];
+    for (let c = 0; c < 4; c++) {
+      for (let r = 0; r < 4; r++) {
+        const w = -100.03 + c * 0.0095;
+        const s = 19.98 + r * 0.009;
+        features.push({
+          type: "Feature",
+          geometry: {
+            type: "Polygon",
+            coordinates: [
+              [
+                [w, s],
+                [w + 0.0095, s],
+                [w + 0.0095, s + 0.009],
+                [w, s + 0.009],
+                [w, s],
+              ],
+            ],
+          },
+          properties: { activityCount: 1 + ((c + r) % 5) },
+        });
+      }
+    }
+    return send(
+      res,
+      200,
+      { type: "FeatureCollection", grid, truncated: false, features },
+      { "Content-Type": "application/geo+json" },
+    );
   }
   const trackMatch = /^GET \/api\/v1\/activities\/([\w-]+)\/track$/.exec(route);
   if (trackMatch) {

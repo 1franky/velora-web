@@ -19,3 +19,15 @@ export function validTile(z: number, x: number, y: number): boolean {
   const size = 2 ** z;
   return x >= 0 && y >= 0 && x < size && y < size;
 }
+
+/** Recuadro `oeste,sur,este,norte` en grados, recortado al rango válido; `null` si no es válido. */
+export function parseBbox(value: string | null): [number, number, number, number] | null {
+  const parts = (value ?? "").split(",").map(Number);
+  if (parts.length !== 4 || !parts.every(Number.isFinite)) return null;
+  const west = Math.max(-180, parts[0]);
+  const south = Math.max(-90, parts[1]);
+  const east = Math.min(180, parts[2]);
+  const north = Math.min(90, parts[3]);
+  if (west >= east || south >= north) return null;
+  return [west, south, east, north].map((n) => Math.round(n * 1e6) / 1e6) as [number, number, number, number];
+}
