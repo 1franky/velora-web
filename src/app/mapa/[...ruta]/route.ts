@@ -6,10 +6,11 @@ import { apiBaseUrl, secureCookies } from "@/lib/auth/config";
 import { cookieNames } from "@/lib/auth/cookies";
 import { isValidAccessToken } from "@/lib/auth/verify";
 import { basemapDir, parseRange, resolveBasemapFile } from "@/lib/basemap/files";
+import { requestAccessToken } from "@/lib/basemap/request";
 
 /**
  * Archivos del mapa base (ADR-015) servidos por Velora, con solicitudes por rangos para PMTiles. Solo con sesión
- * válida: son datos públicos de OpenStreetMap, pero el ancho de banda es nuestro. Ningún tercero recibe las zonas
+ * válida (cookie de la web o Bearer de la app de Android): son datos públicos de OpenStreetMap, pero el ancho de banda es nuestro. Ningún tercero recibe las zonas
  * consultadas.
  */
 export async function GET(request: NextRequest, { params }: RouteContext<"/mapa/[...ruta]">) {
@@ -18,7 +19,8 @@ export async function GET(request: NextRequest, { params }: RouteContext<"/mapa/
   if (!file) {
     return new Response(null, { status: 404 });
   }
-  const token = request.cookies.get(cookieNames(secureCookies()).access)?.value;
+  // La web manda su cookie; la app de Android, `Authorization: Bearer` (ADR-024).
+  const token = requestAccessToken(request.headers, request.cookies.get(cookieNames(secureCookies()).access)?.value);
   if (!(await isValidAccessToken(token, apiBaseUrl()))) {
     return new Response(null, { status: 401, headers: { "Cache-Control": "no-store" } });
   }
