@@ -104,4 +104,35 @@ test.describe("archivos del mapa base", () => {
     expect((await forged.get("/mapa/mexico.pmtiles")).status()).toBe(401);
     await Promise.all([anonymous.dispose(), forged.dispose()]);
   });
+
+  test("la app de Android entra con Bearer y recibe el estilo del mapa", async ({ playwright, request }) => {
+    const login = await request.post(`${API}/api/v1/auth/login`, {
+      data: { email: "propietario@example.com", password: "contraseña-de-prueba" },
+    });
+    const { accessToken } = (await login.json()) as { accessToken: string };
+    const app = await playwright.request.newContext({
+      baseURL: "http://localhost:3100",
+      extraHTTPHeaders: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    const tiles = await app.get("/mapa/mexico.pmtiles", { headers: { Range: "bytes=0-126" } });
+    expect(tiles.status()).toBe(206);
+
+    const style = await app.get("/mapa/estilo/oscuro.json");
+    expect(style.status()).toBe(200);
+    expect(style.headers()["cache-control"]).toContain("private");
+    const body = (await style.json()) as { sources: { protomaps: { url: string } }; glyphs: string; sprite: string };
+    expect(body.sources.protomaps.url).toBe("pmtiles://http://localhost:3100/mapa/mexico.pmtiles");
+    expect(body.glyphs).toBe("http://localhost:3100/mapa/fonts/{fontstack}/{range}.pbf");
+    expect(body.sprite).toBe("http://localhost:3100/mapa/sprites/dark");
+    expect((await app.get("/mapa/estilo/morado.json")).status()).toBe(404);
+
+    const forged = await playwright.request.newContext({
+      baseURL: "http://localhost:3100",
+      extraHTTPHeaders: { Authorization: "Bearer inventado" },
+    });
+    expect((await forged.get("/mapa/mexico.pmtiles")).status()).toBe(401);
+    expect((await forged.get("/mapa/estilo/claro.json")).status()).toBe(401);
+    await Promise.all([app.dispose(), forged.dispose()]);
+  });
 });
