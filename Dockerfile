@@ -38,7 +38,10 @@ COPY --from=build --chown=velora:velora /workspace/node_modules ./node_modules
 COPY --from=build --chown=velora:velora /workspace/.next ./.next
 COPY --from=build --chown=velora:velora /workspace/public ./public
 COPY --from=build --chown=velora:velora /workspace/messages ./messages
+# next.config.ts se vuelve a leer al arrancar: todo lo que importa debe estar en la imagen (sin esto, el contenedor
+# no arranca; pasó el 12/11/2026 con los encabezados de seguridad).
 COPY --from=build --chown=velora:velora /workspace/src/i18n ./src/i18n
+COPY --from=build --chown=velora:velora /workspace/src/lib/security ./src/lib/security
 
 USER velora
 EXPOSE 3000

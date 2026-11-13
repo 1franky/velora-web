@@ -93,3 +93,24 @@ jobs:
           name: playwright-report-real
           path: playwright-report-real
           retention-days: 7
+
+  imagen:
+    # La imagen que se despliega arranca y sirve /login con sus encabezados. Las E2E corren sobre el repositorio
+    # completo y no lo detectan: el 12/11/2026 la imagen no incluía un módulo que importa next.config.ts y la web cayó.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Construir la imagen de producción
+        run: docker build -t velora-web:ci .
+      - name: Arrancarla y revisar /login
+        run: |
+          docker run -d --name web -p 127.0.0.1:3000:3000 -e VELORA_API_URL=http://127.0.0.1:9 velora-web:ci
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/login || true)
+            [ "$code" = 200 ] && break
+            sleep 2
+          done
+          docker logs web
+          [ "$code" = 200 ] || { echo "::error::La imagen no sirve /login (código $code)"; exit 1; }
+          curl -sI http://127.0.0.1:3000/login | grep -qi '^content-security-policy:' \
+            || { echo "::error::La imagen no envía los encabezados de seguridad"; exit 1; }
