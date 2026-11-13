@@ -20,6 +20,8 @@ jobs:
           cache: pnpm
       - name: Dependencias
         run: pnpm install --frozen-lockfile
+      - name: Dependencias de producción sin vulnerabilidades altas conocidas
+        run: pnpm audit --prod --audit-level high
       - name: Tipos de la API al día con el contrato fijado
         run: pnpm api:check
       - name: Formato
