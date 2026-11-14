@@ -1,8 +1,10 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createApiClient } from "@/lib/api/client";
+import { clientAddress } from "./client-address";
 import { apiBaseUrl } from "./config";
 import { safeNextPath } from "./cookies";
 import { storeTokens, takeAndClearTokens } from "./session";
@@ -21,9 +23,14 @@ export async function login(_previous: LoginState, form: FormData): Promise<Logi
     return { error: t("required"), email };
   }
 
+  // La API limita intentos por IP: sin esto, todos los navegadores contarían como el contenedor web.
+  const address = clientAddress(await headers());
   let result;
   try {
-    result = await createApiClient(apiBaseUrl()).POST("/auth/login", { body: { email, password } });
+    result = await createApiClient(apiBaseUrl()).POST("/auth/login", {
+      body: { email, password },
+      headers: address ? { "X-Forwarded-For": address } : undefined,
+    });
   } catch {
     return { error: t("unavailable"), email };
   }
