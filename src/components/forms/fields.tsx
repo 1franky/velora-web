@@ -46,7 +46,16 @@ export function TextField({
   maxLength,
   required,
   inputMode,
-}: Common & { defaultValue?: string | number | null; maxLength?: number; required?: boolean; inputMode?: "decimal" }) {
+  type,
+  autoComplete,
+}: Common & {
+  defaultValue?: string | number | null;
+  maxLength?: number;
+  required?: boolean;
+  inputMode?: "decimal";
+  type?: "text" | "password";
+  autoComplete?: string;
+}) {
   return (
     <Field label={label} error={error} hint={hint}>
       {({ id, describedBy }) => (
@@ -57,6 +66,8 @@ export function TextField({
           maxLength={maxLength}
           required={required}
           inputMode={inputMode}
+          type={type}
+          autoComplete={autoComplete}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           className={control}

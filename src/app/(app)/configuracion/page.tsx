@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { BikeActiveToggle } from "@/components/settings/bike-active-toggle";
+import { DeleteAccountForm } from "@/components/settings/delete-account-form";
 import { HeartRateForm } from "@/components/settings/heart-rate-form";
 import { PrivacyForm } from "@/components/settings/privacy-form";
 import { AddBikeDialog, AddDeviceDialog, EditBikeDialog } from "@/components/settings/dialogs";
@@ -11,6 +12,7 @@ import { ThemeSelector } from "@/components/theme-selector";
 import { deleteBikeAction } from "./actions";
 import { getMe, listAllBikes, listDevices } from "@/lib/catalog/data";
 import { MEXICO_TIME_ZONES } from "@/lib/catalog/forms";
+import { isExportFailure } from "@/lib/account/export";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("nav"))("configuracion") };
@@ -18,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const skeleton = <div aria-hidden className="h-24 max-w-2xl animate-pulse rounded-lg bg-superficie-hundida" />;
 
-export default async function SettingsPage() {
+export default async function SettingsPage({ searchParams }: PageProps<"/configuracion">) {
   const t = await getTranslations("settings");
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-10 px-6 py-10 lg:px-10 lg:py-14">
@@ -59,6 +61,28 @@ export default async function SettingsPage() {
           <ThemeSelector />
         </div>
       </Section>
+
+      <Section id="tus-datos" title={t("data.title")} hint={t("data.hint")}>
+        <div className="flex max-w-2xl flex-col gap-6">
+          <Suspense fallback={null}>
+            <ExportNotice searchParams={searchParams} />
+          </Suspense>
+          <div className="flex flex-col gap-2">
+            <p className="text-sm">{t("data.export.body")}</p>
+            <div>
+              {/* Enlace normal y no fetch: el navegador descarga el ZIP en streaming sin cargarlo en memoria. */}
+              <a
+                href="/api/datos/exportacion"
+                className="inline-block rounded-md bg-acento px-4 py-2 font-semibold text-acento-texto-sobre hover:brightness-110"
+              >
+                {t("data.export.button")}
+              </a>
+            </div>
+            <p className="text-sm text-tinta-suave">{t("data.export.note")}</p>
+          </div>
+          <DeleteAccountForm />
+        </div>
+      </Section>
     </div>
   );
 }
@@ -84,6 +108,18 @@ function Section({
       </div>
       {children}
     </section>
+  );
+}
+
+/** Motivo de una descarga fallida (`?datos=`), leído detrás de Suspense porque depende de la solicitud. */
+async function ExportNotice({ searchParams }: Pick<PageProps<"/configuracion">, "searchParams">) {
+  const reason = (await searchParams).datos;
+  if (!isExportFailure(reason)) return null;
+  const t = await getTranslations("settings.data.export.errors");
+  return (
+    <p role="alert" className="rounded-md border border-negativo p-3 text-sm font-medium text-negativo">
+      {t(reason)}
+    </p>
   );
 }
 

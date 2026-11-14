@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@372cedf9b7870a568f8df5f0310688872fdb4baf. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@16e083ea9034d2f38b037a767aafd60f9612f7ff. No editar a mano.
 
 export interface paths {
     "/auth/login": {
@@ -90,6 +90,46 @@ export interface paths {
         head?: never;
         /** Actualizar preferencias */
         patch: operations["updatePreferences"];
+        trace?: never;
+    };
+    "/me/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Exportar todos los datos del usuario (ZIP)
+         * @description Genera el ZIP mientras se descarga; no queda copia en el servidor. Contenido (formato `velora-export/1`): `manifest.json`, `profile.json` (sin contraseña), `bikes.json`, `devices.json` y, por actividad, `activities/{id}/activity.json`, `track.geojson` (recorrido completo, sin simplificar ni recortar por privacidad), `streams.csv` y `original.{fit|gpx|tcx}`. No incluye datos que se recalculan (celdas de exploración, mapa de calor, historial de reprocesos). Una sola exportación a la vez por usuario.
+         */
+        get: operations["exportMyData"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/deletion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Borrar la cuenta y todos sus datos
+         * @description Irreversible. Requiere la contraseña actual. Borra el usuario, sus sesiones, actividades, archivos originales, bicicletas, dispositivos e importaciones. Las copias en los respaldos cifrados expiran según su retención (ADR-028). Los fallos de contraseña cuentan para el mismo límite que el login.
+         */
+        post: operations["deleteMyAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/bikes": {
@@ -587,6 +627,9 @@ export interface components {
         LoginRequest: {
             /** Format: email */
             email: string;
+            password: string;
+        };
+        AccountDeletionRequest: {
             password: string;
         };
         RefreshRequest: {
@@ -1257,6 +1300,73 @@ export interface operations {
             };
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    exportMyData: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Archivo ZIP con todos los datos del usuario */
+            200: {
+                headers: {
+                    /** @description `attachment; filename="velora-export-AAAA-MM-DD.zip"` */
+                    "Content-Disposition"?: string;
+                    "Cache-Control"?: "no-store";
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Ya hay una exportación en curso para este usuario */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteMyAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountDeletionRequest"];
+            };
+        };
+        responses: {
+            /** @description Cuenta borrada; los tokens dejan de ser válidos */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            /** @description La contraseña no coincide; no se borró nada */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            429: components["responses"]["TooManyRequests"];
         };
     };
     listBikes: {

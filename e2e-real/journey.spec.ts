@@ -250,6 +250,30 @@ test("Rendimiento suma la rodada de exterior y no cuenta el duplicado borrado", 
   await expectNoViolations(page);
 });
 
+test("descarga la exportación con la rodada y su archivo original", async ({ page }) => {
+  await login(page, "/configuracion");
+  const download = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Descargar mis datos" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toMatch(/^velora-export-\d{4}-\d{2}-\d{2}\.zip$/);
+  const chunks: Buffer[] = [];
+  for await (const chunk of await file.createReadStream()) chunks.push(chunk as Buffer);
+  const zip = Buffer.concat(chunks);
+  expect(zip.subarray(0, 2).toString()).toBe("PK");
+  // Los nombres de las entradas van sin comprimir en el directorio central del ZIP.
+  const names = zip.toString("latin1");
+  const folder = `activities/${tcxActivity.split("/").at(-1)}/`;
+  for (const name of [
+    "manifest.json",
+    "profile.json",
+    "bikes.json",
+    `${folder}activity.json`,
+    `${folder}original.tcx`,
+  ]) {
+    expect(names).toContain(name);
+  }
+});
+
 test("borra la actividad y cierra sesión", async ({ page }) => {
   await login(page, tcxActivity);
   await page.getByRole("button", { name: "Borrar actividad" }).click();
@@ -261,4 +285,25 @@ test("borra la actividad y cierra sesión", async ({ page }) => {
   await expect(page).toHaveURL(/\/login$/);
   await page.goto("/actividades");
   await expect(page).toHaveURL(/\/login\?next=%2Factividades$/);
+});
+
+test("borra la cuenta con su contraseña y ya no se puede entrar", async ({ page }) => {
+  await login(page, "/configuracion");
+  await page.getByLabel("Tu contraseña").fill("no-es-la-contraseña");
+  await page.getByLabel("Escribe BORRAR para confirmar").fill("BORRAR");
+  await page.getByRole("button", { name: "Borrar mi cuenta para siempre" }).click();
+  await expect(page.getByText("La contraseña no es correcta. No se borró nada.")).toBeVisible();
+
+  // React limpia el formulario tras cada envío: se vuelve a escribir todo.
+  await page.getByLabel("Tu contraseña").fill(PASSWORD);
+  await page.getByLabel("Escribe BORRAR para confirmar").fill("BORRAR");
+  await page.getByRole("button", { name: "Borrar mi cuenta para siempre" }).click();
+  await expect(page).toHaveURL(/\/login\?cuenta=borrada$/);
+  await expect(page.getByText("Tu cuenta y todos tus datos se borraron.")).toBeVisible();
+
+  // Next conserva oculta la página anterior: "Contraseña" exacta para no tomar el campo de Configuración.
+  await page.getByLabel("Correo electrónico").fill(EMAIL);
+  await page.getByLabel("Contraseña", { exact: true }).fill(PASSWORD);
+  await page.getByRole("button", { name: "Entrar" }).click();
+  await expect(page.getByText("Correo o contraseña incorrectos.")).toBeVisible();
 });

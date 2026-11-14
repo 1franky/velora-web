@@ -231,9 +231,18 @@ function reset() {
     maxHeartRate: null,
     duplicatesExcluded: 0,
     explorationPending: 0,
+    accountDeleted: false,
+    exportBusy: false,
+    deletionForwardedFor: null,
   };
 }
 reset();
+
+/** ZIP mínimo y válido con un manifest.json, en lugar de una exportación real (ADR-028). */
+const EXPORT_ZIP = Buffer.from(
+  "UEsDBBQAAAAIADNTbl1zmKu0HgAAABwAAAANAAAAbWFuaWZlc3QuanNvbqtWSssvyk0sUbJSKkvNyS9K1E2tKMgvKtE3VKoFAFBLAQIUAxQAAAAIADNTbl1zmKu0HgAAABwAAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsFBgAAAAABAAEAOwAAAEkAAAAAAA==",
+  "base64",
+);
 
 function issue(family) {
   const accessToken = randomUUID();
@@ -352,6 +361,7 @@ createServer(async (req, res) => {
   if (route === "POST /__empty") return ((state.activities = []), send(res, 204));
   if (route === "POST /__duplicados-omitidos") return ((state.duplicatesExcluded = 2), send(res, 204));
   if (route === "POST /__exploracion-pendiente") return ((state.explorationPending = 3), send(res, 204));
+  if (route === "POST /__exportacion-en-curso") return ((state.exportBusy = true), send(res, 204));
   if (route === "POST /__duplicados") {
     // La misma rodada (la más reciente del seed) importada también en GPX (sin FC ni cadencia) y TCX.
     const original = seedActivities()[0];
@@ -381,6 +391,8 @@ createServer(async (req, res) => {
       cellQueries: state.cellQueries,
       timeseriesQueries: state.timeseriesQueries,
       recordsQueries: state.recordsQueries,
+      accountDeleted: state.accountDeleted,
+      deletionForwardedFor: state.deletionForwardedFor,
     });
   }
 
@@ -388,7 +400,7 @@ createServer(async (req, res) => {
     if (body.password === "bloqueado") {
       return send(res, 429, { title: "Demasiados intentos", status: 429 }, { "Retry-After": "90" });
     }
-    if (body.email?.toLowerCase() !== OWNER.email || body.password !== OWNER.password) {
+    if (state.accountDeleted || body.email?.toLowerCase() !== OWNER.email || body.password !== OWNER.password) {
       return unauthorized(res, "Correo o contraseña incorrectos.");
     }
     state.logins++;
@@ -879,6 +891,29 @@ createServer(async (req, res) => {
     return found
       ? send(res, 200, detail(found))
       : send(res, 404, { title: "No encontrado", status: 404, detail: "La actividad no existe." });
+  }
+  if (route === "GET /api/v1/me/export") {
+    if (state.exportBusy) {
+      return send(res, 409, { title: "Exportación en curso", status: 409 });
+    }
+    res.writeHead(200, {
+      "Content-Type": "application/zip",
+      "Content-Disposition": 'attachment; filename="velora-export-2026-11-14.zip"',
+      "Cache-Control": "no-store",
+    });
+    return res.end(EXPORT_ZIP);
+  }
+  if (route === "POST /api/v1/me/deletion") {
+    if (body.password === "bloqueado") {
+      return send(res, 429, { title: "Demasiados intentos", status: 429 }, { "Retry-After": "90" });
+    }
+    if (body.password !== OWNER.password) {
+      return send(res, 403, { title: "Contraseña incorrecta", status: 403 });
+    }
+    state.accountDeleted = true;
+    state.deletionForwardedFor = req.headers["x-forwarded-for"] ?? null;
+    for (const session of state.access.values()) state.revoked.add(session.family); // cascada: tokens fuera
+    return send(res, 204);
   }
   if (route === "GET /api/v1/me") {
     return send(res, 200, {
