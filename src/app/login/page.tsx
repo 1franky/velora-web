@@ -28,6 +28,17 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
 /** El parámetro `next` es un dato de la solicitud: se lee detrás de Suspense (Cache Components). */
 async function NextField({ searchParams }: Pick<PageProps<"/login">, "searchParams">) {
-  const next = (await searchParams).next;
-  return <LoginForm next={typeof next === "string" ? next : ""} />;
+  const params = await searchParams;
+  const next = params.next;
+  const t = await getTranslations("login");
+  return (
+    <>
+      {params.cuenta === "borrada" && (
+        <p role="status" className="rounded-md border border-linea bg-superficie p-3 text-sm">
+          {t("accountDeleted")}
+        </p>
+      )}
+      <LoginForm next={typeof next === "string" ? next : ""} />
+    </>
+  );
 }

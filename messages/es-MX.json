@@ -75,7 +75,8 @@
       "tooManyAttempts": "Demasiados intentos. Espera {minutes, plural, one {# minuto} other {# minutos}} antes de volver a intentarlo.",
       "invalidInput": "Revisa que el correo tenga un formato válido.",
       "unavailable": "No pudimos conectar con el servicio. Intenta de nuevo en unos momentos."
-    }
+    },
+    "accountDeleted": "Tu cuenta y todos tus datos se borraron. Las copias en los respaldos cifrados se eliminan solas en unos meses."
   },
   "session": {
     "logout": "Cerrar sesión",
@@ -209,6 +210,35 @@
       "saving": "Guardando…",
       "saved": "FC máxima guardada.",
       "error": "No se pudo guardar. Intenta de nuevo."
+    },
+    "data": {
+      "title": "Tus datos",
+      "hint": "Descarga todo lo que Velora guarda de ti o borra tu cuenta por completo.",
+      "export": {
+        "body": "Un archivo ZIP con tu perfil, bicicletas, dispositivos y, por cada rodada, sus métricas, vueltas, recorrido completo, streams en CSV y el archivo original que importaste.",
+        "button": "Descargar mis datos",
+        "note": "El recorrido va completo, sin el recorte de privacidad: guarda el archivo en un lugar seguro.",
+        "errors": {
+          "en-curso": "Ya hay una descarga en curso. Espera a que termine e intenta de nuevo.",
+          "sesion": "Tu sesión expiró. Vuelve a iniciar sesión e intenta de nuevo.",
+          "error": "No se pudo generar la descarga. Intenta de nuevo en unos momentos."
+        }
+      },
+      "delete": {
+        "title": "Borrar mi cuenta",
+        "body": "Se borran para siempre tu cuenta, tus rodadas, los archivos originales, tus bicicletas, dispositivos e importaciones. No se puede deshacer: descarga tus datos antes si los quieres conservar.",
+        "backups": "Las copias en los respaldos cifrados se eliminan solas cuando vencen, en un máximo de seis meses.",
+        "password": "Tu contraseña",
+        "confirmation": "Escribe {word} para confirmar",
+        "submit": "Borrar mi cuenta para siempre",
+        "deleting": "Borrando…",
+        "errors": {
+          "wrongPassword": "La contraseña no es correcta. No se borró nada.",
+          "tooMany": "Demasiados intentos. Espera {minutes, plural, one {# minuto} other {# minutos}} antes de volver a intentarlo.",
+          "session": "Tu sesión expiró. Vuelve a iniciar sesión e intenta de nuevo.",
+          "unavailable": "No pudimos conectar con el servicio. No se borró nada; intenta de nuevo."
+        }
+      }
     }
   },
   "activities": {
