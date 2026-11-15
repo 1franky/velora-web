@@ -234,6 +234,17 @@ function reset() {
     accountDeleted: false,
     exportBusy: false,
     deletionForwardedFor: null,
+    strava: {
+      enabled: true,
+      connected: false,
+      athleteId: null,
+      connectedAt: null,
+      importedActivities: 0,
+      backfillDone: false,
+      lastSyncAt: null,
+      lastSyncError: null,
+    },
+    stravaDeleteRequested: null,
   };
 }
 reset();
@@ -362,6 +373,23 @@ createServer(async (req, res) => {
   if (route === "POST /__duplicados-omitidos") return ((state.duplicatesExcluded = 2), send(res, 204));
   if (route === "POST /__exploracion-pendiente") return ((state.explorationPending = 3), send(res, 204));
   if (route === "POST /__exportacion-en-curso") return ((state.exportBusy = true), send(res, 204));
+  if (route === "POST /__strava-revocado") {
+    state.strava = { ...state.strava, lastSyncError: "AUTH_REVOKED" };
+    return send(res, 204);
+  }
+  if (route === "POST /__strava-apagado") return ((state.strava = { ...state.strava, enabled: false }), send(res, 204));
+  if (route === "GET /__strava") return send(res, 200, { deleteRequested: state.stravaDeleteRequested });
+  if (route === "GET /__strava-autorizar") {
+    const web = process.env.FAKE_WEB_ORIGIN ?? "http://localhost:3100";
+    res.writeHead(302, {
+      Location: `${web}/configuracion/strava/retorno?code=bueno&state=estado-1&scope=read,activity:read_all`,
+    });
+    return res.end();
+  }
+  if (route === "POST /__actividad-strava") {
+    state.activities[0]._format = "STRAVA";
+    return send(res, 204);
+  }
   if (route === "POST /__duplicados") {
     // La misma rodada (la más reciente del seed) importada también en GPX (sin FC ni cadencia) y TCX.
     const original = seedActivities()[0];
@@ -891,6 +919,39 @@ createServer(async (req, res) => {
     return found
       ? send(res, 200, detail(found))
       : send(res, 404, { title: "No encontrado", status: 404, detail: "La actividad no existe." });
+  }
+  // Strava (ADR-030): la "autorización" vuelve de inmediato al retorno de la web, como si el usuario aceptara.
+  if (route === "GET /api/v1/integrations/strava") return send(res, 200, state.strava);
+  if (route === "POST /api/v1/integrations/strava/authorization") {
+    // Otro origen, como strava.com: el navegador sale de la web y Strava lo devuelve al retorno.
+    return send(res, 200, { authorizationUrl: `http://localhost:${PORT}/__strava-autorizar` });
+  }
+  if (route === "POST /api/v1/integrations/strava/connection") {
+    if (body.state !== "estado-1") return send(res, 400, { title: "Autorización no válida", status: 400 });
+    state.strava = {
+      ...state.strava,
+      connected: true,
+      athleteId: 12345,
+      connectedAt: "2026-11-14T20:00:00Z",
+      importedActivities: 12,
+      lastSyncAt: "2026-11-14T20:15:00Z",
+      lastSyncError: null,
+    };
+    return send(res, 200, state.strava);
+  }
+  if (route === "DELETE /api/v1/integrations/strava/connection") {
+    const remove = url.searchParams.get("deleteActivities") === "true";
+    state.stravaDeleteRequested = remove;
+    const deleted = remove ? state.strava.importedActivities : 0;
+    state.strava = {
+      ...state.strava,
+      connected: false,
+      athleteId: null,
+      connectedAt: null,
+      importedActivities: remove ? 0 : state.strava.importedActivities,
+      lastSyncError: null,
+    };
+    return send(res, 200, { deletedActivities: deleted });
   }
   if (route === "GET /api/v1/me/export") {
     if (state.exportBusy) {

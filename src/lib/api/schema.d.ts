@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@3f0f523142e00b4d5607d2387929c0ee7ed7aea1. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@a458f606887bd35e387b787c1c5badcd2bc4cb6a. No editar a mano.
 
 export interface paths {
     "/auth/login": {
@@ -126,6 +126,94 @@ export interface paths {
          * @description Irreversible. Requiere la contraseña actual. Borra el usuario, sus sesiones, actividades, archivos originales, bicicletas, dispositivos e importaciones. Las copias en los respaldos cifrados expiran según su retención (ADR-028). Los fallos de contraseña cuentan para el mismo límite que el login.
          */
         post: operations["deleteMyAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/integrations/strava": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Estado del conector de Strava
+         * @description Si el conector está apagado en el servidor, responde enabled=false y el cliente debe ocultar la opción (ADR-030).
+         */
+        get: operations["getStravaStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/integrations/strava/authorization": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Iniciar la autorización con Strava
+         * @description Devuelve la URL de autorización de Strava con un estado de un solo uso que vence en 10 minutos. El cliente redirige al usuario ahí; Strava vuelve a la URL de retorno configurada con code, state y scope.
+         */
+        post: operations["startStravaAuthorization"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/integrations/strava/connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Completar la conexión con Strava
+         * @description Recibe lo que Strava devolvió en el retorno. Exige el permiso activity:read_all. Los tokens se guardan cifrados y nunca se devuelven.
+         */
+        post: operations["connectStrava"];
+        /**
+         * Desconectar Strava
+         * @description Revoca el acceso en Strava y borra la conexión. Con deleteActivities=true borra también todas las actividades importadas de Strava. Idempotente.
+         */
+        delete: operations["disconnectStrava"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/integrations/strava/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Validación de la suscripción de webhooks (la llama Strava)
+         * @description Strava confirma la suscripción con hub.mode=subscribe, el verify token y un challenge que debe devolverse. Sin sesión (ADR-030).
+         */
+        get: operations["validateStravaWebhook"];
+        put?: never;
+        /**
+         * Evento de Strava (lo llama Strava)
+         * @description Se responde 200 de inmediato y el evento se procesa después. Solo se guardan los eventos de la suscripción propia y de atletas conectados; el resto se ignora con 200 para que Strava no reintente. Sin sesión.
+         */
+        post: operations["receiveStravaWebhook"];
         delete?: never;
         options?: never;
         head?: never;
@@ -624,6 +712,42 @@ export interface components {
             /** @description Identificador para correlacionar errores 500 con los logs. Es el X-Request-Id de la solicitud. */
             errorId?: string;
         };
+        StravaStatus: {
+            /** @description Si el conector está encendido en el servidor */
+            enabled: boolean;
+            connected: boolean;
+            /** Format: int64 */
+            athleteId: number | null;
+            /** Format: date-time */
+            connectedAt: string | null;
+            /**
+             * Format: int64
+             * @description Actividades importadas de Strava
+             */
+            importedActivities: number;
+            /** @description Si la carga inicial del historial terminó */
+            backfillDone: boolean;
+            /** Format: date-time */
+            lastSyncAt: string | null;
+            /**
+             * @description AUTH_REVOKED pide volver a conectar; STRAVA_UNAVAILABLE se reintenta solo
+             * @enum {string|null}
+             */
+            lastSyncError: "AUTH_REVOKED" | "STRAVA_UNAVAILABLE" | null;
+        };
+        StravaAuthorization: {
+            /** Format: uri */
+            authorizationUrl: string;
+        };
+        StravaConnectionRequest: {
+            code: string;
+            state: string;
+            /** @description Permisos concedidos */
+            scope: string;
+        };
+        StravaDisconnection: {
+            deletedActivities: number;
+        };
         LoginRequest: {
             /** Format: email */
             email: string;
@@ -803,8 +927,11 @@ export interface components {
             /** Format: uuid */
             bikeId: string | null;
             timeZone: string;
-            /** @enum {string} */
-            sourceType: "FIT" | "GPX" | "TCX";
+            /**
+             * @description STRAVA si la importó la sincronización con Strava (ADR-030)
+             * @enum {string}
+             */
+            sourceType: "FIT" | "GPX" | "TCX" | "STRAVA";
             /** Format: uuid */
             deviceId: string | null;
             elevationLossMeters: number | null;
@@ -822,8 +949,11 @@ export interface components {
             streamTypes: components["schemas"]["StreamType"][];
             lapCount: number;
             originalFile: {
-                /** @enum {string} */
-                format: "FIT" | "GPX" | "TCX";
+                /**
+                 * @description STRAVA es el resumen y los streams de Strava guardados como original (ADR-030)
+                 * @enum {string}
+                 */
+                format: "FIT" | "GPX" | "TCX" | "STRAVA";
                 sizeBytes: number;
                 /** Format: date-time */
                 importedAt: string;
@@ -1367,6 +1497,177 @@ export interface operations {
                 };
             };
             429: components["responses"]["TooManyRequests"];
+        };
+    };
+    getStravaStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Estado de la conexión */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StravaStatus"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    startStravaAuthorization: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description URL a la que se redirige al usuario */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StravaAuthorization"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    connectStrava: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StravaConnectionRequest"];
+            };
+        };
+        responses: {
+            /** @description Cuenta conectada */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StravaStatus"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+            /** @description La cuenta de Strava ya está conectada a otro usuario */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Strava no respondió */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    disconnectStrava: {
+        parameters: {
+            query?: {
+                deleteActivities?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Desconectado */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StravaDisconnection"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    validateStravaWebhook: {
+        parameters: {
+            query?: {
+                "hub.mode"?: string;
+                "hub.verify_token"?: string;
+                "hub.challenge"?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Token correcto; se devuelve el challenge */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        "hub.challenge": string;
+                    };
+                };
+            };
+            /** @description Token incorrecto */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
+    receiveStravaWebhook: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description Recibido */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: components["responses"]["NotFound"];
         };
     };
     listBikes: {

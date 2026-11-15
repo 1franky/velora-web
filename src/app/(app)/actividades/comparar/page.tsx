@@ -8,6 +8,7 @@ import { keepActivityAction } from "@/app/(app)/actividades/[id]/actions";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { getActivity, type ActivityDetail } from "@/lib/activities/data";
 import { CHART_SERIES } from "@/lib/activities/series";
+import { sourceLabel } from "@/lib/strava/connection";
 import {
   MISSING,
   formatDistance,
@@ -69,7 +70,10 @@ async function Comparison({ searchParams }: { searchParams: PageProps<"/activida
   const rows: { label: string; value: (activity: ActivityDetail) => string }[] = [
     {
       label: t("file"),
-      value: (x) => `${x.originalFile.format}, ${formatFileSize(x.originalFile.sizeBytes)}`,
+      value: (x) =>
+        x.originalFile.format === "STRAVA"
+          ? sourceLabel(x.originalFile.format)
+          : `${x.originalFile.format}, ${formatFileSize(x.originalFile.sizeBytes)}`,
     },
     {
       label: t("start"),
@@ -158,7 +162,7 @@ async function Comparison({ searchParams }: { searchParams: PageProps<"/activida
             return (
               <ConfirmDialog
                 key={keep.id}
-                triggerLabel={t("keep", { title: keep.title, format: keep.originalFile.format })}
+                triggerLabel={t("keep", { title: keep.title, format: sourceLabel(keep.originalFile.format) })}
                 triggerClassName={
                   richer === i
                     ? "rounded-md bg-acento px-4 py-2 font-semibold text-acento-texto-sobre hover:brightness-110"
@@ -170,7 +174,13 @@ async function Comparison({ searchParams }: { searchParams: PageProps<"/activida
                 action={keepActivityAction}
                 fields={{ keepId: keep.id, deleteId: remove.id }}
               >
-                <p>{t("keepBody", { remove: remove.title, format: remove.originalFile.format, keep: keep.title })}</p>
+                <p>
+                  {t("keepBody", {
+                    remove: remove.title,
+                    format: sourceLabel(remove.originalFile.format),
+                    keep: keep.title,
+                  })}
+                </p>
                 <p className="font-medium text-tinta">{t("irreversible")}</p>
               </ConfirmDialog>
             );
