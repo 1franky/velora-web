@@ -6,6 +6,7 @@ import { BikeActiveToggle } from "@/components/settings/bike-active-toggle";
 import { DeleteAccountForm } from "@/components/settings/delete-account-form";
 import { HeartRateForm } from "@/components/settings/heart-rate-form";
 import { PrivacyForm } from "@/components/settings/privacy-form";
+import { StravaSection } from "@/components/settings/strava-section";
 import { AddBikeDialog, AddDeviceDialog, EditBikeDialog } from "@/components/settings/dialogs";
 import { TimeZoneForm } from "@/components/settings/time-zone-form";
 import { ThemeSelector } from "@/components/theme-selector";
@@ -55,6 +56,10 @@ export default async function SettingsPage({ searchParams }: PageProps<"/configu
           <Devices />
         </Suspense>
       </Section>
+
+      <Suspense fallback={null}>
+        <StravaSection searchParams={searchParams} />
+      </Suspense>
 
       <Section id="apariencia" title={t("appearance")} hint={t("appearanceHint")}>
         <div className="max-w-2xl">

@@ -239,6 +239,42 @@
           "unavailable": "No pudimos conectar con el servicio. No se borró nada; intenta de nuevo."
         }
       }
+    },
+    "strava": {
+      "title": "Strava",
+      "hint": "Trae tus rodadas de Strava a Velora sin subir archivos.",
+      "body": "Al conectar, Velora importa tus rodadas de ciclismo de Strava, primero las nuevas y después tu historial, poco a poco según los límites de Strava. Si ya subiste una rodada como archivo, se queda la del archivo.",
+      "terms": "Strava no permite usar sus datos para analítica en apps de terceros. Decidiste usarlo de todos modos: Strava podría cortar el acceso en cualquier momento (ADR-030).",
+      "connect": "Conectar con Strava",
+      "reconnect": "Volver a conectar",
+      "when": "{date}, {time}",
+      "connectedSince": "Conectado desde",
+      "imported": "Importadas",
+      "importedCount": "{count, plural, =0 {Ninguna rodada todavía} one {# rodada} other {# rodadas}}",
+      "history": "Historial",
+      "historyDone": "Completo",
+      "historyRunning": "Importando, poco a poco",
+      "lastSync": "Última sincronización",
+      "lastSyncNever": "Todavía no; empieza en unos minutos",
+      "syncErrors": {
+        "AUTH_REVOKED": "Strava ya no acepta el acceso de Velora. Vuelve a conectar tu cuenta para seguir importando.",
+        "STRAVA_UNAVAILABLE": "Strava no respondió en la última sincronización. Se reintenta sola."
+      },
+      "disconnect": {
+        "title": "Desconectar Strava",
+        "body": "Velora deja de importar de Strava y revoca su acceso. Las rodadas ya importadas se quedan, a menos que marques la casilla.",
+        "delete": "{count, plural, =0 {Borrar también lo importado de Strava} one {Borrar también la rodada importada de Strava} other {Borrar también las # rodadas importadas de Strava}}",
+        "submit": "Desconectar"
+      },
+      "notices": {
+        "conectado": "Strava quedó conectado. Tus rodadas empiezan a llegar en unos minutos.",
+        "desconectado": "Strava quedó desconectado.",
+        "denegado": "No autorizaste el acceso en Strava, así que no se conectó.",
+        "permiso": "Para importar tus rodadas, autoriza el acceso a todas tus actividades, incluidas las privadas.",
+        "invalido": "La autorización de Strava expiró o no es válida. Intenta conectar de nuevo.",
+        "otra-cuenta": "Esa cuenta de Strava ya está conectada a otro usuario de Velora.",
+        "error": "No pudimos comunicarnos con Strava. Intenta de nuevo en unos minutos."
+      }
     }
   },
   "activities": {
@@ -311,7 +347,7 @@
       "bpm": "{value} ppm",
       "watts": "{value} W",
       "rpm": "{value} rpm",
-      "source": "Importada de un archivo {format} de {size} el {date}.",
+      "source": "{format, select, STRAVA {Importada de Strava el {date}.} other {Importada de un archivo {format} de {size} el {date}.}}",
       "derived": "Calculada por Velora"
     }
   },
