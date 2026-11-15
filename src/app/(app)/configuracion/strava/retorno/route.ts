@@ -1,7 +1,8 @@
-import { NextResponse, type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { createApiClient } from "@/lib/api/client";
 import { apiBaseUrl } from "@/lib/auth/config";
 import { accessToken } from "@/lib/auth/session";
+import { redirectTo } from "@/lib/http/redirect";
 import { callbackProblem, connectionNotice, type StravaNotice } from "@/lib/strava/connection";
 
 /**
@@ -10,8 +11,7 @@ import { callbackProblem, connectionNotice, type StravaNotice } from "@/lib/stra
  * ni se registran.
  */
 export async function GET(request: NextRequest) {
-  const back = (notice: StravaNotice) =>
-    NextResponse.redirect(new URL(`/configuracion?strava=${notice}#strava`, request.url), 303);
+  const back = (notice: StravaNotice) => redirectTo(`/configuracion?strava=${notice}#strava`);
   const params = request.nextUrl.searchParams;
   const callback = {
     code: params.get("code"),
