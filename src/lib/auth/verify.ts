@@ -1,3 +1,5 @@
+import { traced } from "@/lib/api/traced-fetch";
+
 /**
  * Validación de un access token contra la API (GET /me) para rutas que no pasan por Proxy, como los archivos del
  * mapa base (llevan extensión). Revisar solo que exista la cookie no protegería nada: cualquiera puede inventarla.
@@ -22,7 +24,7 @@ export async function isValidAccessToken(
   }
   valid.delete(token);
   try {
-    const response = await fetchImpl(`${apiBaseUrl.replace(/\/$/, "")}/api/v1/me`, {
+    const response = await traced(fetchImpl)(`${apiBaseUrl.replace(/\/$/, "")}/api/v1/me`, {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });

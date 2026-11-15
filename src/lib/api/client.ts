@@ -1,5 +1,6 @@
 import createClient from "openapi-fetch";
 import type { paths } from "./schema";
+import { traced } from "./traced-fetch";
 
 /**
  * Cliente tipado de la API de Velora, generado desde el contrato OpenAPI (ADR-011).
@@ -10,7 +11,7 @@ export function createApiClient(baseUrl: string, accessToken?: string, fetchImpl
   return createClient<paths>({
     baseUrl: `${baseUrl.replace(/\/$/, "")}/api/v1`,
     headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-    fetch: fetchImpl,
+    fetch: traced(fetchImpl),
   });
 }
 

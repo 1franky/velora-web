@@ -1,4 +1,5 @@
 import { cookieNames } from "@/lib/auth/cookies";
+import { traced } from "@/lib/api/traced-fetch";
 
 /**
  * Reenvío de un archivo de actividad a la API (POST /activities/imports) sin guardarlo entero en memoria.
@@ -48,7 +49,7 @@ export function isSameOrigin(headers: Headers): boolean {
 }
 
 export async function forwardImport(request: Request, context: UploadContext): Promise<UploadResult> {
-  const fetchImpl = context.fetchImpl ?? fetch;
+  const fetchImpl = traced(context.fetchImpl ?? fetch);
 
   if (!isSameOrigin(request.headers)) {
     return fail(403, "forbidden");

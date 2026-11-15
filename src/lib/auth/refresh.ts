@@ -1,4 +1,5 @@
 import type { TokenPair } from "./cookies";
+import { traced } from "@/lib/api/traced-fetch";
 
 /**
  * Renovación de tokens de un solo vuelo (ADR-014). La API rota el refresh token en cada uso y revoca la sesión si se
@@ -30,7 +31,7 @@ export function refreshTokens(
 
 async function call(refreshToken: string, apiBaseUrl: string, fetchImpl: typeof fetch): Promise<RefreshResult> {
   try {
-    const response = await fetchImpl(`${apiBaseUrl.replace(/\/$/, "")}/api/v1/auth/refresh`, {
+    const response = await traced(fetchImpl)(`${apiBaseUrl.replace(/\/$/, "")}/api/v1/auth/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken }),
