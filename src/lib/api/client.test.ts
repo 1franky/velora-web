@@ -19,6 +19,7 @@ describe("createApiClient", () => {
     const request = fetchMock.mock.calls[0][0];
     expect(request.url).toBe("http://api.local/api/v1/me");
     expect(request.headers.get("Authorization")).toBe("Bearer token-de-prueba");
+    expect(request.headers.get("X-Request-Id")).toMatch(/^web-/);
   });
 
   it("devuelve el Problem Details de la API como error", async () => {

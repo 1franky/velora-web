@@ -22,7 +22,9 @@ describe("isValidAccessToken", () => {
     expect(await isValidAccessToken("t", "http://api/", fetchImpl, () => clock)).toBe(true);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(fetchImpl.mock.calls[0][0]).toBe("http://api/api/v1/me");
-    expect(fetchImpl.mock.calls[0][1]?.headers).toEqual({ Authorization: "Bearer t" });
+    const headers = new Headers(fetchImpl.mock.calls[0][1]?.headers);
+    expect(headers.get("Authorization")).toBe("Bearer t");
+    expect(headers.get("X-Request-Id")).toMatch(/^web-/);
 
     clock = 61_000;
     await isValidAccessToken("t", "http://api/", fetchImpl, () => clock);

@@ -45,6 +45,8 @@ export VELORA_DB_URL="jdbc:postgresql://127.0.0.1:$DB_PORT/velora"
 export VELORA_DB_USERNAME=velora
 export VELORA_DB_PASSWORD="$DB_PASSWORD"
 export VELORA_API_PORT="$API_PORT"
+# Actuator escucha en su propio puerto (8081 por omisión); uno aleatorio evita choques. La salud pública es /healthz.
+export VELORA_MANAGEMENT_PORT=0
 export VELORA_STORAGE_ORIGINALS_PATH="$WORK/originals"
 
 echo "Creando el propietario de prueba…"
@@ -55,11 +57,11 @@ echo "Arrancando la API en el puerto ${API_PORT}…"
 java -jar "$JAR" >"$WORK/api.log" 2>&1 &
 API_PID=$!
 for _ in $(seq 1 120); do
-  curl -sf "http://localhost:$API_PORT/actuator/health/readiness" >/dev/null && break
+  curl -sf "http://localhost:$API_PORT/healthz" >/dev/null && break
   kill -0 "$API_PID" 2>/dev/null || { echo "La API terminó antes de estar lista"; exit 1; }
   sleep 1
 done
-curl -sf "http://localhost:$API_PORT/actuator/health/readiness" >/dev/null
+curl -sf "http://localhost:$API_PORT/healthz" >/dev/null
 
 cd "$WEB_DIR"
 VELORA_API_URL="http://localhost:$API_PORT" pnpm exec playwright test -c playwright.real.config.ts "$@"

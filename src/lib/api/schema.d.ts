@@ -1,4 +1,4 @@
-// Generado por scripts/api-types.mjs desde velora-api@16e083ea9034d2f38b037a767aafd60f9612f7ff. No editar a mano.
+// Generado por scripts/api-types.mjs desde velora-api@3f0f523142e00b4d5607d2387929c0ee7ed7aea1. No editar a mano.
 
 export interface paths {
     "/auth/login": {
@@ -621,7 +621,7 @@ export interface components {
             status: number;
             detail?: string;
             instance?: string;
-            /** @description Identificador para correlacionar errores 500 con los logs. */
+            /** @description Identificador para correlacionar errores 500 con los logs. Es el X-Request-Id de la solicitud. */
             errorId?: string;
         };
         LoginRequest: {

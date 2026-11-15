@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { createApiClient } from "@/lib/api/client";
 import { apiBaseUrl, secureCookies } from "./config";
 import { cookieNames, expiredCookieOptions, tokenCookies, type TokenPair } from "./cookies";
@@ -17,6 +18,9 @@ export async function api() {
   // Primero la cookie: con Cache Components, lo que sigue a una lectura de la solicitud no se prerenderiza, así el
   // build no necesita VELORA_API_URL.
   const token = await accessToken();
+  // Las llamadas a la API son siempre de la solicitud: sin esto Next intenta prerenderizarlas, el X-Request-Id
+  // aleatorio lo interrumpe y la llamada se cancela (blocking-prerender-crypto).
+  await connection();
   return createApiClient(apiBaseUrl(), token);
 }
 

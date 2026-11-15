@@ -58,10 +58,10 @@ describe("forwardImport", () => {
     expect(result).toEqual({ status: 202, body: { jobId: "job-1" } });
     const [url, init] = fetchImpl.mock.calls[0];
     expect(url).toBe("http://api.local/api/v1/activities/imports");
-    expect(init?.headers).toEqual({
-      "Content-Type": "multipart/form-data; boundary=x",
-      Authorization: "Bearer token",
-    });
+    const headers = new Headers(init?.headers);
+    expect(headers.get("Content-Type")).toBe("multipart/form-data; boundary=x");
+    expect(headers.get("Authorization")).toBe("Bearer token");
+    expect(headers.get("X-Request-Id")).toMatch(/^web-/);
     expect(init?.body).toBeInstanceOf(ReadableStream);
   });
 
