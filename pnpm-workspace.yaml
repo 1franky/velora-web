@@ -8,3 +8,10 @@ allowBuilds:
   # Traídos por next-intl para su extractor de mensajes (no se usa); binarios precompilados opcionales.
   "@parcel/watcher": false
   "@swc/core": false
+auditConfig:
+  ignoreGhsas:
+    # picomatch ≤4.0.7, ReDoS con extglobs repetidos (alta, CVSS 7.5), aún sin versión corregida (17/11/2026).
+    # Solo llega por next-intl → @parcel/watcher, que usa su extractor de mensajes (no se usa, ver allowBuilds arriba)
+    # con patrones de la configuración: ninguna entrada de usuario llega a picomatch. Quitar en cuanto haya parche
+    # (Dependabot lo subirá) o si picomatch aparece por otra ruta en `pnpm why picomatch --prod`.
+    - GHSA-fc5q-39xc-vjpf
